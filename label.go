@@ -11,8 +11,8 @@ func NewLabel(s string) *Label {
 }
 
 func (s *Label) write() {
-	write(moveColumn(1))
-	ClearLine()
+	moveColumn(1)
+	clearLine()
 	write(s.s)
 }
 

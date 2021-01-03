@@ -27,9 +27,9 @@ func (c *Checkbox) write() {
 	if c.selected {
 		s = "\u001b[7m" + s + " \u001b[0m"
 	}
-	ClearLine()
+	clearLine()
 	write(s)
-	write(moveColumn(1))
+	moveColumn(1)
 }
 
 func (c *Checkbox) handleInput(b []byte) {

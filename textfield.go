@@ -26,7 +26,7 @@ func (s *TextField) moveCursor() {
 		s.cursorPosition = 0
 	}
 
-	write(moveColumn(s.minCursorPosition + s.cursorPosition + 1))
+	moveColumn(s.minCursorPosition + s.cursorPosition + 1)
 }
 
 func (s *TextField) write() {
@@ -37,8 +37,8 @@ func (s *TextField) write() {
 		s.cursorPosition = 0
 	}
 
-	write(moveColumn(1))
-	ClearLine()
+	moveColumn(1)
+	clearLine()
 	write(s.prefix + "\u001b[37;1m" + s.input + "\u001b[0m")
 	s.moveCursor()
 }
@@ -61,15 +61,19 @@ func (s *TextField) handleInput(b []byte) {
 				s.moveCursor()
 			}
 		}
-	} else if b[0] >= 32 && b[0] <= 126 {
-		s.input = fmt.Sprintf("%s%s%s", s.input[:s.cursorPosition], string(b[0]), s.input[s.cursorPosition:])
-		s.cursorPosition++
-		s.write()
-	} else if b[0] == 127 {
-		if s.cursorPosition > 0 {
-			s.input = s.input[:s.cursorPosition-1] + s.input[s.cursorPosition:]
-			s.cursorPosition--
+		return
+	}
+	for _, c := range b {
+		if c >= 32 && c <= 126 {
+			s.input = fmt.Sprintf("%s%s%s", s.input[:s.cursorPosition], string(c), s.input[s.cursorPosition:])
+			s.cursorPosition++
 			s.write()
+		} else if c == 127 {
+			if s.cursorPosition > 0 {
+				s.input = s.input[:s.cursorPosition-1] + s.input[s.cursorPosition:]
+				s.cursorPosition--
+				s.write()
+			}
 		}
 	}
 }

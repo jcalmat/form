@@ -13,9 +13,9 @@ func NewButton(s string, callback func()) *Button {
 }
 
 func (c *Button) write() {
-	ClearLine()
+	clearLine()
 	write(">" + c.text + "<")
-	write(moveColumn(1))
+	moveColumn(1)
 }
 
 func (c *Button) handleInput(b []byte) {

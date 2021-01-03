@@ -31,7 +31,7 @@ func (ps *form) Add(p ...formItem) {
 
 func (ps *form) pick(index, offset int) int {
 
-	write(moveUp(index))
+	movePrevLine(index)
 
 	i := index + offset
 
@@ -47,7 +47,6 @@ func (ps *form) pick(index, offset int) int {
 	// to place the cursor at the right place.
 	// Moving the cursor is handled by the pick() method.
 	for n, p := range ps.items {
-		write(moveColumn(1))
 		if n != i {
 			p.unpick()
 		}
@@ -55,13 +54,24 @@ func (ps *form) pick(index, offset int) int {
 	}
 
 	// Move the cursor vertically at the right row and select it.
-	write(moveUp(len(ps.items) - i))
+	movePrevLine(len(ps.items) - i)
 	if ps.items[i].selectable() {
 		ps.items[i].pick()
 	} else {
 		return ps.pick(i, offset)
 	}
 	return i
+}
+
+func (ps *form) unpickAll(index int) {
+	// Move the cursor to the top of the form and individually unpick them.
+	movePrevLine(index)
+
+	for _, p := range ps.items {
+		moveColumn(1)
+		p.unpick()
+		write("\n")
+	}
 }
 
 func (ps *form) stop() {
@@ -72,13 +82,14 @@ func (ps *form) Ask() {
 	ps.active = true
 
 	// Do not process if there is no selectable formItem
-	selectableItemCount := 0
-	for _, i := range ps.items {
+	var firstSelectable *int
+	for index, i := range ps.items {
 		if i.selectable() {
-			selectableItemCount++
+			firstSelectable = &index
+			break
 		}
 	}
-	if selectableItemCount == 0 {
+	if firstSelectable == nil {
 		return
 	}
 
@@ -98,16 +109,15 @@ func (ps *form) Ask() {
 	// Restore the echoing state when exiting.
 	defer exec.Command("stty", "-F", "/dev/tty", "echo").Run() //nolint
 
-	write(movePrevLine(len(ps.items)))
-	selected := ps.pick(0, 0)
+	movePrevLine(len(ps.items) - *firstSelectable)
+	selected := ps.pick(*firstSelectable, 0)
 
 	var b []byte
 	for {
-		// Stop the formItem loop and clear the quit message
+		// Stop the main loop and clear the quit message
 		if !ps.active {
-			write(moveNextLine(len(ps.items) - selected + 1))
-			ClearLine()
-			write(moveNextLine(1))
+			ps.unpickAll(selected)
+			clearLine()
 			break
 		}
 

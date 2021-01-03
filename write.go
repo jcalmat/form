@@ -9,7 +9,7 @@ func write(s string) {
 	_, _ = io.WriteString(os.Stdout, s)
 }
 
-func ClearLine() {
+func clearLine() {
 	write("\u001b[0K")
 }
 
