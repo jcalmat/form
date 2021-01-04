@@ -5,12 +5,14 @@ const (
 	CHECKBOX_CHECK   string = "☑"
 )
 
+// Checkbox implements formItem interface
 type Checkbox struct {
 	sentence string
 	checked  bool
 	selected bool
 }
 
+// NewCheckbox creates a new instance of Checkbox object
 func NewCheckbox(s string, checked bool) *Checkbox {
 	return &Checkbox{
 		sentence: s,

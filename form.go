@@ -18,6 +18,7 @@ type form struct {
 	active bool
 }
 
+// NewForm creates a new instance of form object
 func NewForm() *form {
 	return &form{
 		items:  make([]formItem, 0),
@@ -25,6 +26,7 @@ func NewForm() *form {
 	}
 }
 
+// Add adds formItems to the form object
 func (ps *form) Add(p ...formItem) {
 	ps.items = append(ps.items, p...)
 }
@@ -78,6 +80,7 @@ func (ps *form) stop() {
 	ps.active = false
 }
 
+// Ask displays the formItems and handles the user's inputs
 func (ps *form) Ask() {
 	ps.active = true
 

@@ -2,6 +2,7 @@ package form
 
 import "fmt"
 
+// TextField implements formItem interface
 type TextField struct {
 	prefix            string
 	input             string
@@ -9,6 +10,7 @@ type TextField struct {
 	minCursorPosition int
 }
 
+// NewTextField creates a new instance of TextField object
 func NewTextField(prefix string) *TextField {
 	return &TextField{
 		prefix:            prefix,

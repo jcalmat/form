@@ -1,9 +1,11 @@
 package form
 
+// Label implements formItem interface
 type Label struct {
 	s string
 }
 
+// NewLabel creates a new instance of Label object
 func NewLabel(s string) *Label {
 	return &Label{
 		s: s,
