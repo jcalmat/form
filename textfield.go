@@ -1,37 +1,44 @@
 package form
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
-// TextField implements formItem interface
-type TextField struct {
+// textField implements formItem interface
+type textField struct {
 	prefix            string
 	input             string
 	cursorPosition    int
 	minCursorPosition int
+	verticalSize      int
 }
 
-// NewTextField creates a new instance of TextField object
-func NewTextField(prefix string) *TextField {
-	return &TextField{
+var _ formItem = (*textField)(nil)
+
+// NewTextField creates a new instance of textField object
+func NewTextField(prefix string) *textField {
+	return &textField{
 		prefix:            prefix,
 		input:             "",
 		minCursorPosition: len(prefix),
 		cursorPosition:    len(prefix),
+		verticalSize:      strings.Count("\n", prefix) + 1,
 	}
 }
 
-func (s *TextField) moveCursor() {
-	if s.cursorPosition > len(s.input) {
-		s.cursorPosition = len(s.input)
-	}
-	if s.cursorPosition < 0 {
-		s.cursorPosition = 0
-	}
+// func (s *textField) moveCursor() {
+// 	if s.cursorPosition > len(s.input) {
+// 		s.cursorPosition = len(s.input)
+// 	}
+// 	if s.cursorPosition < 0 {
+// 		s.cursorPosition = 0
+// 	}
 
-	moveColumn(s.minCursorPosition + s.cursorPosition + 1)
-}
+// 	moveColumn(s.minCursorPosition + s.cursorPosition + 1)
+// }
 
-func (s *TextField) write() {
+func (s *textField) write() {
 	if s.cursorPosition > len(s.input) {
 		s.cursorPosition = len(s.input)
 	}
@@ -42,25 +49,36 @@ func (s *TextField) write() {
 	moveColumn(1)
 	clearLine()
 	write(s.prefix + "\u001b[37;1m" + s.input + "\u001b[0m")
-	s.moveCursor()
+	// s.moveCursor()
 }
 
-func (s *TextField) pick() {
-	s.write()
+func (s *textField) pick() {
+	// s.write()
 }
 
-func (s *TextField) unpick() {}
+func (s *textField) unpick() {}
 
-func (s *TextField) handleInput(b []byte) {
+func (s *textField) setCursorPosition() {
+	if s.cursorPosition > len(s.input) {
+		s.cursorPosition = len(s.input)
+	}
+	if s.cursorPosition < 0 {
+		s.cursorPosition = 0
+	}
+
+	moveColumn(s.minCursorPosition + s.cursorPosition + 1)
+}
+
+func (s *textField) handleInput(b []byte) {
 	if b[0] == 27 {
 		if b[1] == 91 {
 			switch b[2] {
 			case 67: // Right
 				s.cursorPosition++
-				s.moveCursor()
+				s.setCursorPosition()
 			case 68: // Left
 				s.cursorPosition--
-				s.moveCursor()
+				s.setCursorPosition()
 			}
 		}
 		return
@@ -80,8 +98,14 @@ func (s *TextField) handleInput(b []byte) {
 	}
 }
 
-func (c *TextField) selectable() bool { return true }
+func (c *textField) isVisible() bool { return true }
 
-func (c *TextField) Answer() string {
+func (c *textField) selectable() bool { return true }
+
+func (c *textField) size() int { return c.verticalSize }
+
+func (c *textField) Answer() string {
 	return c.input
 }
+
+func (c *textField) displayChildren() bool { return c.input != "" }

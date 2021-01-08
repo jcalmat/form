@@ -14,10 +14,20 @@ func main() {
 	title := form.NewLabel("My form")
 	check := form.NewCheckbox("Do you need to use form package?", false)
 	check2 := form.NewCheckbox("Is this package interesting?", true)
+	checkDependance := form.NewCheckbox("Really??", false)
+	checkDependance2 := form.NewCheckbox("Really???", false)
 	question := form.NewTextField("Any comment? ")
 
+	check2.AddDependance(checkDependance)
+
+	checkDependance.AddDependance(checkDependance2)
+
 	// Add these fields to the form
-	myform.Add(title, check, check2, question)
+	myform.Register(check2)
+	for _, v := range check2.Children() {
+		myform.Register(v)
+	}
+	myform.Register(title, check, question)
 
 	// Display your form
 	myform.Ask()

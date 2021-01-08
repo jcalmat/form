@@ -14,5 +14,5 @@ func clearLine() {
 }
 
 const (
-	QUIT_KEY_MESSAGE string = "\u001b[30;1mPress ESC to quit\u001b[0m"
+	navigation_keys_message string = "\u001b[30;1mPress arrow keys or TAB to navigate, ESC to quit\u001b[0m"
 )

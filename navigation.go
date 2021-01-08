@@ -20,3 +20,9 @@ func movePrevLine(amount int) {
 		write(fmt.Sprintf("\u001b[%dF", amount))
 	}
 }
+
+func moveNextLine(amount int) {
+	if amount > 0 {
+		write(fmt.Sprintf("\u001b[%dE", amount))
+	}
+}
