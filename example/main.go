@@ -18,23 +18,18 @@ func main() {
 	checkDependance2 := form.NewCheckbox("Really???", false)
 	question := form.NewTextField("Any comment? ")
 
-	check2.AddDependance(checkDependance)
-
-	checkDependance.AddDependance(checkDependance2)
-
 	// Add these fields to the form
-	myform.Register(check2)
-	for _, v := range check2.Children() {
-		myform.Register(v)
-	}
-	myform.Register(title, check, question)
+	myform.Register(check2).RegisterChildren(checkDependance, checkDependance2).RegisterChild(form.NewLabel("Amazing!"))
+	myform.RegisterMany(title, check, question)
 
 	// Display your form
-	myform.Ask()
+	myform.Run()
 
 	// Handle the answers
 	fmt.Printf(`use form package? = %v
 is this package interesting? = %v
+really?? = %v
+really??? = %v
 comment = %v
-`, check.Answer(), check2.Answer(), question.Answer())
+`, check.Answer(), check2.Answer(), checkDependance.Answer(), checkDependance2.Answer(), question.Answer())
 }

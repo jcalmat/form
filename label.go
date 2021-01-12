@@ -1,11 +1,18 @@
 package form
 
+import (
+	"fmt"
+
+	"github.com/jcalmat/form/cursor"
+)
+
 // label implements formItem interface
 type label struct {
-	s string
+	s      string
+	prefix string
 }
 
-var _ formItem = (*label)(nil)
+var _ Item = (*label)(nil)
 
 // NewLabel creates a new instance of label object
 func NewLabel(s string) *label {
@@ -15,9 +22,9 @@ func NewLabel(s string) *label {
 }
 
 func (s *label) write() {
-	moveColumn(1)
+	cursor.MoveColumn(1)
 	clearLine()
-	write(s.s)
+	write(fmt.Sprintf("%s%s", s.prefix, s.s))
 }
 
 func (s *label) pick() {}
@@ -28,8 +35,10 @@ func (s *label) handleInput(b []byte) {}
 
 func (c *label) selectable() bool { return false }
 
-func (c *label) isVisible() bool { return true }
-
 func (c *label) setCursorPosition() {}
 
 func (c *label) displayChildren() bool { return true }
+
+func (c *label) setPrefix(prefix string) {
+	c.prefix = prefix
+}

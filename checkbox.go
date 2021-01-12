@@ -2,7 +2,8 @@ package form
 
 import (
 	"fmt"
-	"strings"
+
+	"github.com/jcalmat/form/cursor"
 )
 
 const (
@@ -12,24 +13,20 @@ const (
 
 // checkbox implements formItem interface
 type checkbox struct {
-	sentence     string
-	checked      bool
-	selected     bool
-	verticalSize int
-	parent       *checkbox
-	children     []*checkbox
-	// visible      bool
+	question string
+	prefix   string
+	checked  bool
+	selected bool
 }
 
-var _ formItem = (*checkbox)(nil)
+var _ Item = (*checkbox)(nil)
 
 // NewCheckbox creates a new instance of checkbox object
-func NewCheckbox(s string, checked bool) *checkbox {
+func NewCheckbox(question string, checked bool) *checkbox {
 	return &checkbox{
-		sentence:     s,
-		checked:      checked,
-		verticalSize: strings.Count("\n", s) + 1,
-		// visible:      true,
+		prefix:   "",
+		question: question,
+		checked:  checked,
 	}
 }
 
@@ -38,54 +35,41 @@ func NewCheckbox(s string, checked bool) *checkbox {
 // displayed.
 // If the value of the checkbox becomes false, the child checkbox will be
 // disabled and its value will automatically be set to false.
-func (c *checkbox) AddDependance(child *checkbox) {
-	child.parent = c
-	c.children = append(c.children, child)
-	// if !c.visible || !c.checked {
-	// 	child.visible = false
-	// }
+// func (c *checkbox) AddDependance(child *checkbox) {
+// 	child.parent = c
+// 	c.children = append(c.children, child)
+// 	// if !c.visible || !c.checked {
+// 	// 	child.visible = false
+// 	// }
 
-	// p := child.parent
-	// parentsCount := 1
-	// for {
-	// 	if p.parent != nil {
-	// 		parentsCount++
-	// 		continue
-	// 	}
-	// 	break
-	// }
-	// child.sentence = fmt.Sprintf("%s╰─%s", strings.Repeat("  ", parentsCount), child.sentence)
-	// child.minCursorPosition = parentsCount + 2
-}
+// 	// p := child.parent
+// 	// parentsCount := 1
+// 	// for {
+// 	// 	if p.parent != nil {
+// 	// 		parentsCount++
+// 	// 		continue
+// 	// 	}
+// 	// 	break
+// 	// }
+// 	// child.question = fmt.Sprintf("%s╰─%s", strings.Repeat("  ", parentsCount), child.question)
+// 	// child.minCursorPosition = parentsCount + 2
+// }
 
-func (c *checkbox) Children() []*checkbox {
-	ret := make([]*checkbox, 0)
-	children := c.children
-	ret = append(ret, children...)
-	for i := 0; i < len(children); i++ {
-		ret = append(ret, children[i].Children()...)
-	}
+// func (c *checkbox) Children() []*checkbox {
+// 	ret := make([]*checkbox, 0)
+// 	// children := c.children
+// 	// ret = append(ret, children...)
+// 	// for i := 0; i < len(children); i++ {
+// 	// 	ret = append(ret, children[i].Children()...)
+// 	// }
 
-	return ret
-}
+// 	return ret
+// }
 
 func (c *checkbox) write() {
-	var s string
-
-	parentsCount := 0
-	parent := c.parent
-	for {
-		if parent != nil {
-			parentsCount++
-			parent = parent.parent
-			continue
-		}
-		break
-	}
+	var question string
 
 	checkbox := checkbox_uncheck
-
-	// s = checkbox_uncheck + " " + c.sentence
 	if c.checked {
 		checkbox = "\u001b[32;1m" + checkbox_check
 	}
@@ -93,15 +77,11 @@ func (c *checkbox) write() {
 		checkbox = "\u001b[7m" + checkbox
 	}
 
-	if parentsCount > 0 {
-		s = fmt.Sprintf("%s╰─%s %s\u001b[0m", strings.Repeat("  ", parentsCount-1), checkbox, c.sentence)
-	} else {
-		s = fmt.Sprintf("%s %s\u001b[0m", checkbox, c.sentence)
-	}
+	question = fmt.Sprintf("%s%s %s\u001b[0m", c.prefix, checkbox, c.question)
 
 	clearLine()
-	write(s)
-	moveColumn(1)
+	write(question)
+	cursor.MoveColumn(1)
 }
 
 func (c *checkbox) handleInput(b []byte) {
@@ -126,50 +106,26 @@ func (c *checkbox) unpick() {
 	// c.write()
 }
 
-func (c *checkbox) setVisibility(b bool) {
-
-}
-
-// func (c *checkbox) displayChildren() {
-// 	for _, v := range c.children {
-// 		v.visible = c.checked && c.visible
-// 		v.displayChildren()
-// 	}
-// }
-
 func (c *checkbox) toggle() {
 	c.checked = !c.checked
 	// c.displayChildren()
 }
 
 func (c *checkbox) displayChildren() bool {
-	if c.parent == nil {
-		return true
-	}
-	return c.parent.checked
-}
-
-func (c *checkbox) isVisible() bool {
-	visible := true
-	parent := c.parent
-	for {
-		if parent != nil {
-			if !parent.checked {
-				visible = false
-				break
-			}
-			parent = parent.parent
-			continue
-		}
-		break
-	}
-	return visible
+	return c.checked
 }
 
 func (c *checkbox) selectable() bool { return true }
 
-func (c *checkbox) size() int { return c.verticalSize }
-
+//TODO: Fix answer to return false if the item is not visible
 func (c *checkbox) Answer() bool {
-	return c.checked && c.isVisible()
+	return c.checked
+}
+
+func (c *checkbox) getQuestion() string {
+	return fmt.Sprintf("%s%s", c.prefix, c.question)
+}
+
+func (c *checkbox) setPrefix(prefix string) {
+	c.prefix = prefix
 }

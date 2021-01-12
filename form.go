@@ -1,52 +1,114 @@
 package form
 
 import (
+	"fmt"
 	"os"
-	"os/exec"
+	"strings"
+
+	"github.com/jcalmat/form/cursor"
 )
 
-type formItem interface {
+type Item interface {
 	write()
 	pick()
 	unpick()
 	handleInput([]byte)
 	selectable() bool
-	isVisible() bool
 	setCursorPosition()
-	// displayChildren() bool
-	// size() int
+	displayChildren() bool
+	setPrefix(string)
+}
+
+type formItems []*formItem
+
+type formItem struct {
+	item     Item
+	parent   *formItem
+	children formItems
 }
 
 type form struct {
-	items  []formItem
+	items  formItems
 	active bool
 }
 
 // NewForm creates a new instance of form object
 func NewForm() *form {
 	return &form{
-		items:  make([]formItem, 0),
+		items:  make([]*formItem, 0),
 		active: false,
 	}
 }
 
-// Register adds formItems to the form object
-func (f *form) Register(p ...formItem) {
-	f.items = append(f.items, p...)
+func (f *formItem) RegisterChildren(c ...Item) *formItem {
+	for _, item := range c {
+		formItem := &formItem{item: item, parent: f}
+		formItem.setText()
+		f.children = append(f.children, formItem)
+	}
+	return f
 }
 
-func (f *form) visibleItems() []formItem {
-	items := make([]formItem, 0)
-	for _, v := range f.items {
-		if v.isVisible() {
-			items = append(items, v)
+func (f *formItem) setText() {
+
+	p := f.parent
+	parentsCount := 0
+	for {
+		if p.parent != nil {
+			parentsCount++
+			p = p.parent
+			continue
+		}
+		break
+	}
+
+	f.item.setPrefix(fmt.Sprintf("%s╰─", strings.Repeat("  ", parentsCount)))
+}
+
+func (f *formItem) RegisterChild(c Item) *formItem {
+	item := &formItem{item: c, parent: f}
+	item.setText()
+	f.children = append(f.children, item)
+	return item
+}
+
+// Register adds formItems to the form object
+func (f *form) Register(p Item) *formItem {
+	item := &formItem{
+		item: p,
+	}
+	f.items = append(f.items, item)
+	return item
+}
+
+// Register adds formItems to the form object
+func (f *form) RegisterMany(p ...Item) *form {
+	for _, item := range p {
+		item := &formItem{
+			item: item,
+		}
+		f.items = append(f.items, item)
+	}
+	return f
+}
+
+func (f formItems) visibleItems() []Item {
+	items := make([]Item, 0)
+	for _, v := range f {
+		items = append(items, v.item)
+		if v.children != nil && v.item.displayChildren() {
+			items = append(items, v.children.visibleItems()...)
 		}
 	}
 	return items
 }
 
+func (f *form) visibleItems() []Item {
+	return f.items.visibleItems()
+}
+
 func (f *form) pick(index, offset int) int {
-	movePrevLine(index)
+	cursor.MovePrevLine(index)
 
 	i := index + offset
 	visibleItems := f.visibleItems()
@@ -77,7 +139,7 @@ func (f *form) pick(index, offset int) int {
 	}
 
 	f.displayItems()
-	movePrevLine(len(visibleItems) - i)
+	cursor.MovePrevLine(len(visibleItems) - i)
 	visibleItems[i].setCursorPosition()
 
 	return i
@@ -85,10 +147,10 @@ func (f *form) pick(index, offset int) int {
 
 func (f *form) unpickAll(index int) {
 	// Move the cursor to the top of the form and individually unpick them.
-	movePrevLine(index)
+	cursor.MovePrevLine(index)
 
 	for _, p := range f.visibleItems() {
-		moveColumn(1)
+		cursor.MoveColumn(1)
 		p.unpick()
 		write("\n")
 	}
@@ -99,9 +161,9 @@ func (f *form) stop() {
 }
 
 func (f *form) displayItems() {
-	write("\x1b8")
-	// Clear all from cursor until the end of the screen
-	write("\u001b[0J")
+	cursor.RestorePosition()
+
+	cursor.ClearBelow()
 
 	// Display all visible items.
 	for _, p := range f.visibleItems() {
@@ -113,13 +175,16 @@ func (f *form) displayItems() {
 	write(navigation_keys_message)
 }
 
-// Ask displays the formItems and handles the user's inputs
-func (f *form) Ask() {
+// Run displays the formItems and handles the user's inputs
+func (f *form) Run() {
+	cursor.StartBufferedSession()
+	defer cursor.RestoreSession()
+
 	f.active = true
 	visibleItems := f.visibleItems()
 
 	// Save cursor position at first line.
-	write("\x1b7")
+	cursor.SavePosition()
 
 	// Do not process if there is no selectable formItem
 	var firstSelectable *int
@@ -135,14 +200,11 @@ func (f *form) Ask() {
 
 	f.displayItems()
 
-	// Disable input buffering.
-	_ = exec.Command("stty", "-F", "/dev/tty", "cbreak", "min", "1").Run()
-	// Do not display entered characters on the screen.
-	_ = exec.Command("stty", "-F", "/dev/tty", "-echo").Run()
-	// Restore the echoing state when exiting.
-	defer exec.Command("stty", "-F", "/dev/tty", "echo").Run() //nolint
+	cursor.DisableInputBuffering()
+	cursor.HideInputs()
+	defer cursor.RestoreEchoingState()
 
-	movePrevLine(len(f.visibleItems()) - *firstSelectable)
+	cursor.MovePrevLine(len(f.visibleItems()) - *firstSelectable)
 	selected := f.pick(*firstSelectable, 0)
 	var b []byte
 	for {
