@@ -122,10 +122,6 @@ func (c *checkbox) Answer() bool {
 	return c.checked
 }
 
-func (c *checkbox) getQuestion() string {
-	return fmt.Sprintf("%s%s", c.prefix, c.question)
-}
-
 func (c *checkbox) setPrefix(prefix string) {
 	c.prefix = prefix
 }

@@ -7,13 +7,6 @@ import (
 	"os/exec"
 )
 
-// func moveUp(amount int) string {
-// 	if amount > 0 {
-// 		return fmt.Sprintf("\u001b[%dA", amount)
-// 	}
-// 	return ""
-// }
-
 func write(s string) {
 	_, _ = io.WriteString(os.Stdout, s)
 }
@@ -27,12 +20,6 @@ func MoveColumn(amount int) {
 func MovePrevLine(amount int) {
 	if amount > 0 {
 		write(fmt.Sprintf("\u001b[%dF", amount))
-	}
-}
-
-func moveNextLine(amount int) {
-	if amount > 0 {
-		write(fmt.Sprintf("\u001b[%dE", amount))
 	}
 }
 

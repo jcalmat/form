@@ -84,8 +84,6 @@ func (t *textField) handleInput(b []byte) {
 	}
 }
 
-func (c *textField) isVisible() bool { return true }
-
 func (c *textField) selectable() bool { return true }
 
 func (c *textField) Answer() string {
@@ -93,10 +91,6 @@ func (c *textField) Answer() string {
 }
 
 func (c *textField) displayChildren() bool { return c.input != "" }
-
-func (c *textField) getText() string {
-	return fmt.Sprintf("%s%s", c.prefix, c.question)
-}
 
 func (c *textField) setPrefix(prefix string) {
 	c.prefix = prefix
