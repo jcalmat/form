@@ -60,7 +60,7 @@ func NewForm() *form {
 	}
 }
 
-func (f *formItem) AddChildren(c ...Item) *formItem {
+func (f *formItem) AddSubItems(c ...Item) *formItem {
 	for _, item := range c {
 		formItem := &formItem{item: item, parent: f}
 		formItem.setText()

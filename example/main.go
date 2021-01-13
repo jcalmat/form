@@ -28,5 +28,5 @@ func main() {
 	myform.Run()
 
 	// Handle the answers
-	fmt.Printf("question0 answer = %v, question0_1 answer = %v, question0_2 answer = %v", question0.Answer(), question0_1.Answer(), question0_2.Answer())
+	fmt.Printf("question0 answer = %v, question0_1 answer = %v, question0_2 answer = %v\n", question0.Answer(), question0_1.Answer(), question0_2.Answer())
 }

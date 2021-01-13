@@ -81,7 +81,6 @@ func (c *checkbox) displayChildren() bool {
 
 func (c *checkbox) selectable() bool { return true }
 
-//TODO: Fix answer to return false if the item is not visible
 func (c *checkbox) Answer() bool {
 	return c.checked
 }

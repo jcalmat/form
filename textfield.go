@@ -55,9 +55,11 @@ func (t *textField) handleInput(i input.I) {
 	if i.Is(input.RIGHT) {
 		t.cursorPosition++
 		t.setCursorPosition()
+		return
 	} else if i.Is(input.LEFT) {
 		t.cursorPosition--
 		t.setCursorPosition()
+		return
 	}
 
 	for _, c := range i {
