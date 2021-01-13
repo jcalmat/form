@@ -12,79 +12,79 @@ const (
 	checkbox_check   string = "☑"
 )
 
-// checkbox implements formItem interface
-type checkbox struct {
+// Checkbox implements formItem interface
+type Checkbox struct {
 	question string
 	prefix   string
 	checked  bool
 	selected bool
 }
 
-var _ Item = (*checkbox)(nil)
+var _ Item = (*Checkbox)(nil)
 
-// NewCheckbox creates a new instance of checkbox object
-func NewCheckbox(question string, checked bool) *checkbox {
-	return &checkbox{
+// NewCheckbox creates a new instance of Checkbox object
+func NewCheckbox(question string, checked bool) *Checkbox {
+	return &Checkbox{
 		prefix:   "",
 		question: question,
 		checked:  checked,
 	}
 }
 
-func (c *checkbox) write() {
+func (c *Checkbox) write() {
 	var question string
 
-	checkbox := checkbox_uncheck
+	Checkbox := checkbox_uncheck
 	if c.checked {
-		checkbox = "\u001b[32;1m" + checkbox_check
+		Checkbox = "\u001b[32;1m" + checkbox_check
 	}
 	if c.selected {
-		checkbox = "\u001b[7m" + checkbox
+		Checkbox = "\u001b[7m" + Checkbox
 	}
 
-	question = fmt.Sprintf("%s%s %s\u001b[0m", c.prefix, checkbox, c.question)
+	question = fmt.Sprintf("%s%s %s\u001b[0m", c.prefix, Checkbox, c.question)
 
 	clearLine()
 	write(question)
 	cursor.MoveColumn(1)
 }
 
-func (c *checkbox) handleInput(i input.I) {
+func (c *Checkbox) handleInput(i input.I) {
 	if i.Is(input.ENTER) {
 		c.toggle()
 	}
 }
 
-func (c *checkbox) setCursorPosition() {}
+func (c *Checkbox) setCursorPosition() {}
 
-func (c *checkbox) clearValue() {
+func (c *Checkbox) clearValue() {
 	c.checked = false
 }
 
-func (c *checkbox) pick() {
+func (c *Checkbox) pick() {
 	c.selected = true
 	cursor.HideCursor()
 }
 
-func (c *checkbox) unpick() {
+func (c *Checkbox) unpick() {
 	c.selected = false
 	cursor.DisplayCursor()
 }
 
-func (c *checkbox) toggle() {
+func (c *Checkbox) toggle() {
 	c.checked = !c.checked
 }
 
-func (c *checkbox) displayChildren() bool {
+func (c *Checkbox) displayChildren() bool {
 	return c.checked
 }
 
-func (c *checkbox) selectable() bool { return true }
+func (c *Checkbox) selectable() bool { return true }
 
-func (c *checkbox) Answer() bool {
+func (c *Checkbox) Answer() bool {
 	return c.checked
 }
 
-func (c *checkbox) setPrefix(prefix string) {
+func (c *Checkbox) setPrefix(prefix string) {
 	c.prefix = prefix
 }

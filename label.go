@@ -7,41 +7,41 @@ import (
 	"github.com/jcalmat/form/input"
 )
 
-// label implements formItem interface
-type label struct {
+// Label implements formItem interface
+type Label struct {
 	s      string
 	prefix string
 }
 
-var _ Item = (*label)(nil)
+var _ Item = (*Label)(nil)
 
-// NewLabel creates a new instance of label object
-func NewLabel(s string) *label {
-	return &label{
+// NewLabel creates a new instance of Label object
+func NewLabel(s string) *Label {
+	return &Label{
 		s: s,
 	}
 }
 
-func (s *label) write() {
+func (l *Label) write() {
 	cursor.MoveColumn(1)
 	clearLine()
-	write(fmt.Sprintf("%s%s", s.prefix, s.s))
+	write(fmt.Sprintf("%s%s", l.prefix, l.s))
 }
 
-func (s *label) pick() {}
+func (l *Label) pick() {}
 
-func (s *label) unpick() {}
+func (l *Label) unpick() {}
 
-func (s *label) handleInput(i input.I) {}
+func (l *Label) handleInput(i input.I) {}
 
-func (c *label) selectable() bool { return false }
+func (l *Label) selectable() bool { return false }
 
-func (c *label) setCursorPosition() {}
+func (l *Label) setCursorPosition() {}
 
-func (l *label) clearValue() {}
+func (l *Label) clearValue() {}
 
-func (c *label) displayChildren() bool { return true }
+func (l *Label) displayChildren() bool { return true }
 
-func (c *label) setPrefix(prefix string) {
-	c.prefix = prefix
+func (l *Label) setPrefix(prefix string) {
+	l.prefix = prefix
 }
