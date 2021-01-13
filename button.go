@@ -7,58 +7,58 @@ import (
 	"github.com/jcalmat/form/input"
 )
 
-// button implements formItem interface
-type button struct {
+// Button implements Item interface
+type Button struct {
 	s        string
 	callback func()
 	prefix   string
 	selected bool
 }
 
-var _ Item = (*button)(nil)
+var _ Item = (*Button)(nil)
 
-// NewButton creates a new instance of button object
-func NewButton(s string, callback func()) *button {
-	return &button{
+// NewButton creates a new instance of Button object
+func NewButton(s string, callback func()) *Button {
+	return &Button{
 		s:        s,
 		callback: callback,
 	}
 }
 
-func (s *button) write() {
+func (b *Button) write() {
 	cursor.MoveColumn(1)
 	clearLine()
-	if s.selected {
-		write(fmt.Sprintf("[\u001b[7m%s%s\u001b[0m]", s.prefix, s.s))
+	if b.selected {
+		write(fmt.Sprintf("[\u001b[7m%s%s\u001b[0m]", b.prefix, b.s))
 	} else {
-		write(fmt.Sprintf("[%s%s]", s.prefix, s.s))
+		write(fmt.Sprintf("[%s%s]", b.prefix, b.s))
 	}
 }
 
-func (s *button) pick() {
-	s.selected = true
+func (b *Button) pick() {
+	b.selected = true
 	cursor.HideCursor()
 }
 
-func (s *button) unpick() {
-	s.selected = false
+func (b *Button) unpick() {
+	b.selected = false
 	cursor.DisplayCursor()
 }
 
-func (s *button) handleInput(i input.I) {
+func (b *Button) handleInput(i input.I) {
 	if i.Is(input.ENTER) {
-		s.callback()
+		b.callback()
 	}
 }
 
-func (b *button) selectable() bool { return true }
+func (b *Button) selectable() bool { return true }
 
-func (b *button) setCursorPosition() {}
+func (b *Button) setCursorPosition() {}
 
-func (b *button) clearValue() {}
+func (b *Button) clearValue() {}
 
-func (b *button) displayChildren() bool { return true }
+func (b *Button) displayChildren() bool { return true }
 
-func (b *button) setPrefix(prefix string) {
+func (b *Button) setPrefix(prefix string) {
 	b.prefix = prefix
 }
