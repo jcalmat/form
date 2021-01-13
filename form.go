@@ -34,6 +34,9 @@ type Item interface {
 
 	// setPrefix sets the item text prefix if relevant
 	setPrefix(string)
+
+	// clearValue reset the value to it's default state
+	clearValue()
 }
 
 type formItems []*formItem
@@ -141,16 +144,16 @@ func (f *form) pick(index, offset int) int {
 		i = 0
 	}
 
-	// Range over the form and first deselect then select the right one
-	// to place the cursor at the right place.
-	// Moving the cursor is handled by the pick() method.
+	// Range over the form and first unpick then pick the right one
+	// to move the cursor on y axis.
+	// Moving the cursor on x axis is handled by the pick() method.
 	for n, p := range visibleItems {
 		if n != i {
 			p.unpick()
 		}
 	}
 
-	// Move the cursor vertically at the right row and select it.
+	// Move the cursor on y axis at the right row and select it.
 	if visibleItems[i].selectable() {
 		visibleItems[i].pick()
 	} else {
@@ -177,6 +180,19 @@ func (f *form) displayItems() {
 	for _, p := range f.visibleItems() {
 		p.write()
 		write("\n")
+	}
+}
+
+// clearHiddenItemsValues range over all items and subItems and reset the value
+// of the hidden ones
+func (f formItems) clearHiddenItemsValues() {
+	for _, formItem := range f {
+		if formItem.parent != nil && !formItem.parent.item.displayChildren() {
+			formItem.item.clearValue()
+		}
+		if formItem.children != nil {
+			formItem.children.clearHiddenItemsValues()
+		}
 	}
 }
 
@@ -219,6 +235,7 @@ func (f *form) Run() {
 
 		// Stop the main loop and clear the quit message
 		if !f.active {
+			f.items.clearHiddenItemsValues()
 			break
 		}
 

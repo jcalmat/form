@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/jcalmat/form"
 )
 
@@ -12,16 +14,19 @@ func main() {
 	title := form.NewLabel("My form")
 	question0 := form.NewCheckbox("Do you need to use form package?", false)
 	question0_1 := form.NewTextField("Why? ")
+	question0_2 := form.NewCheckbox("Really? ", false)
 
 	// Add these fields to the form
 	myform.AddItem(title)
 
 	myform.AddItem(question0).
-		AddSubItem(question0_1)
+		AddSubItem(question0_1).
+		AddSubItem(question0_2).
+		AddSubItem(form.NewLabel("Amazing!"))
 
 	// Display your form
 	myform.Run()
 
 	// Handle the answers
-	// fmt.Printf("question0 answer = %v, question0_1 answer = %v", question0.Answer(), question0_1.Answer())
+	fmt.Printf("question0 answer = %v, question0_1 answer = %v, question0_2 answer = %v", question0.Answer(), question0_1.Answer(), question0_2.Answer())
 }

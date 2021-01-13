@@ -51,12 +51,14 @@ func (s *button) handleInput(i input.I) {
 	}
 }
 
-func (c *button) selectable() bool { return true }
+func (b *button) selectable() bool { return true }
 
-func (c *button) setCursorPosition() {}
+func (b *button) setCursorPosition() {}
 
-func (c *button) displayChildren() bool { return true }
+func (b *button) clearValue() {}
 
-func (c *button) setPrefix(prefix string) {
-	c.prefix = prefix
+func (b *button) displayChildren() bool { return true }
+
+func (b *button) setPrefix(prefix string) {
+	b.prefix = prefix
 }

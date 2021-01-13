@@ -57,6 +57,10 @@ func (c *checkbox) handleInput(i input.I) {
 
 func (c *checkbox) setCursorPosition() {}
 
+func (c *checkbox) clearValue() {
+	c.checked = false
+}
+
 func (c *checkbox) pick() {
 	c.selected = true
 	cursor.HideCursor()

@@ -88,3 +88,7 @@ func (t *textField) setPrefix(prefix string) {
 	t.minCursorPosition = utf8.RuneCountInString(t.prefix) + utf8.RuneCountInString(t.question)
 	t.cursorPosition = t.minCursorPosition
 }
+
+func (t *textField) clearValue() {
+	t.input = ""
+}

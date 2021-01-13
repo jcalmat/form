@@ -38,6 +38,8 @@ func (c *label) selectable() bool { return false }
 
 func (c *label) setCursorPosition() {}
 
+func (l *label) clearValue() {}
+
 func (c *label) displayChildren() bool { return true }
 
 func (c *label) setPrefix(prefix string) {
