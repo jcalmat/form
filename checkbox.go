@@ -94,21 +94,16 @@ func (c *checkbox) setCursorPosition() {}
 
 func (c *checkbox) pick() {
 	c.selected = true
-	// hide cursor
-	write("\033[?25l")
-	// c.write()
+	cursor.HideCursor()
 }
 
 func (c *checkbox) unpick() {
 	c.selected = false
-	// show cursor
-	write("\033[?25h")
-	// c.write()
+	cursor.DisplayCursor()
 }
 
 func (c *checkbox) toggle() {
 	c.checked = !c.checked
-	// c.displayChildren()
 }
 
 func (c *checkbox) displayChildren() bool {

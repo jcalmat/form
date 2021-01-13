@@ -2,6 +2,7 @@ package form
 
 import (
 	"fmt"
+	"unicode/utf8"
 
 	"github.com/jcalmat/form/cursor"
 )
@@ -22,22 +23,16 @@ func NewTextField(question string) *textField {
 	return &textField{
 		question:          question,
 		input:             "",
-		minCursorPosition: len(question),
-		cursorPosition:    len(question),
+		minCursorPosition: utf8.RuneCountInString(question),
+		cursorPosition:    utf8.RuneCountInString(question),
 	}
 }
 
 func (t *textField) write() {
-	if t.cursorPosition > len(t.input) {
-		t.cursorPosition = len(t.input)
-	}
-	if t.cursorPosition < 0 {
-		t.cursorPosition = 0
-	}
-
 	cursor.MoveColumn(1)
 	clearLine()
-	write(t.question + "\u001b[37;1m" + t.input + "\u001b[0m")
+	write(t.prefix + t.question + "\u001b[37;1m" + t.input + "\u001b[0m")
+	t.setCursorPosition()
 }
 
 func (t *textField) pick() {}
@@ -45,8 +40,8 @@ func (t *textField) pick() {}
 func (t *textField) unpick() {}
 
 func (t *textField) setCursorPosition() {
-	if t.cursorPosition > len(t.input) {
-		t.cursorPosition = len(t.input)
+	if t.cursorPosition > utf8.RuneCountInString(t.input) {
+		t.cursorPosition = utf8.RuneCountInString(t.input)
 	}
 	if t.cursorPosition < 0 {
 		t.cursorPosition = 0
@@ -84,15 +79,17 @@ func (t *textField) handleInput(b []byte) {
 	}
 }
 
-func (c *textField) selectable() bool { return true }
+func (t *textField) selectable() bool { return true }
 
-func (c *textField) Answer() string {
-	return c.input
+func (t *textField) Answer() string {
+	return t.input
 }
 
-func (c *textField) displayChildren() bool { return c.input != "" }
+func (t *textField) displayChildren() bool { return t.input != "" }
 
-func (c *textField) setPrefix(prefix string) {
-	c.prefix = prefix
-	c.minCursorPosition = len(fmt.Sprintf("%s%s", c.prefix, c.question))
+func (t *textField) setPrefix(prefix string) {
+	write(string(utf8.RuneCountInString(prefix)))
+	t.prefix = prefix
+	t.minCursorPosition = utf8.RuneCountInString(t.prefix) + utf8.RuneCountInString(t.question)
+	t.cursorPosition = t.minCursorPosition
 }

@@ -55,3 +55,11 @@ func HideInputs() {
 func RestoreEchoingState() {
 	_ = exec.Command("stty", "-F", "/dev/tty", "echo").Run()
 }
+
+func HideCursor() {
+	write("\033[?25l")
+}
+
+func DisplayCursor() {
+	write("\033[?25h")
+}

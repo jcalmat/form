@@ -12,24 +12,17 @@ func main() {
 
 	// Create some fields for your form
 	title := form.NewLabel("My form")
-	check := form.NewCheckbox("Do you need to use form package?", false)
-	check2 := form.NewCheckbox("Is this package interesting?", true)
-	checkDependance := form.NewCheckbox("Really??", false)
-	checkDependance2 := form.NewCheckbox("Really???", false)
-	question := form.NewTextField("Any comment? ")
+	question0 := form.NewCheckbox("Do you need to use form package?", false)
+	question0_1 := form.NewTextField("Why? ")
 
 	// Add these fields to the form
-	myform.Register(check2).RegisterChildren(checkDependance, checkDependance2).RegisterChild(form.NewLabel("Amazing!"))
-	myform.RegisterMany(title, check, question)
+	myform.AddItem(title)
+	myform.AddItem(question0).AddSubItem(question0_1).AddSubItem(form.NewLabel("Amazing!"))
 
 	// Display your form
 	myform.Run()
 
 	// Handle the answers
-	fmt.Printf(`use form package? = %v
-is this package interesting? = %v
-really?? = %v
-really??? = %v
-comment = %v
-`, check.Answer(), check2.Answer(), checkDependance.Answer(), checkDependance2.Answer(), question.Answer())
+	fmt.Printf(`question0 answer = %v
+question0_1 answer = %v`, question0.Answer(), question0_1.Answer())
 }

@@ -9,7 +9,7 @@ import (
 )
 
 type Item interface {
-	// write writes the item where the cursor currently is 
+	// write writes the item where the cursor currently is
 	write()
 
 	// unpick tells the item that it is currently selected
@@ -18,11 +18,11 @@ type Item interface {
 	// unpick tells the item that it is currently unselected
 	unpick()
 
-	// handleInput snif inputs byte by byte and process actions if needed
+	// handleInput sniffs inputs byte by byte and process actions if needed
 	handleInput([]byte)
 
 	// selectable indicates if the item should be selectable of if it should
-	// be skipped when navigating in the item list 
+	// be skipped when navigating in the item list
 	selectable() bool
 
 	// setCursorPosition asks the item to set the cursor position on the x axis
@@ -57,7 +57,7 @@ func NewForm() *form {
 	}
 }
 
-func (f *formItem) RegisterChildren(c ...Item) *formItem {
+func (f *formItem) AddChildren(c ...Item) *formItem {
 	for _, item := range c {
 		formItem := &formItem{item: item, parent: f}
 		formItem.setText()
@@ -82,31 +82,20 @@ func (f *formItem) setText() {
 	f.item.setPrefix(fmt.Sprintf("%s╰─", strings.Repeat("  ", parentsCount)))
 }
 
-func (f *formItem) RegisterChild(c Item) *formItem {
+func (f *formItem) AddSubItem(c Item) *formItem {
 	item := &formItem{item: c, parent: f}
 	item.setText()
 	f.children = append(f.children, item)
 	return item
 }
 
-// Register adds formItems to the form object
-func (f *form) Register(p Item) *formItem {
+// Add adds formItems to the form object
+func (f *form) AddItem(p Item) *formItem {
 	item := &formItem{
 		item: p,
 	}
 	f.items = append(f.items, item)
 	return item
-}
-
-// Register adds formItems to the form object
-func (f *form) RegisterMany(p ...Item) *form {
-	for _, item := range p {
-		item := &formItem{
-			item: item,
-		}
-		f.items = append(f.items, item)
-	}
-	return f
 }
 
 func (f formItems) visibleItems() []Item {
@@ -187,9 +176,6 @@ func (f *form) displayItems() {
 		p.write()
 		write("\n")
 	}
-
-	// Write a quit message
-	write(navigation_keys_message)
 }
 
 // Run displays the formItems and handles the user's inputs
@@ -215,6 +201,8 @@ func (f *form) Run() {
 		return
 	}
 
+	f.AddItem(NewButton(done_button, func() { f.stop() }))
+	f.AddItem(NewLabel(navigation_keys_message))
 	f.displayItems()
 
 	cursor.DisableInputBuffering()
@@ -259,11 +247,6 @@ func (f *form) Run() {
 
 		// Handle Enter key to automatically select the next formItem.
 		if len(b) > 0 && (b[0] == 10 || b[0] == 13 || b[0] == 9) { // Enter or Tab keys
-			// Stop if the selected formItem is the last one.
-			if b[0] == 9 && selected+1 == len(f.visibleItems()) {
-				f.stop()
-				continue
-			}
 			selected = f.pick(selected, 1)
 		}
 	}
