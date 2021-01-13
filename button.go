@@ -7,7 +7,7 @@ import (
 	"github.com/jcalmat/form/input"
 )
 
-// Button implements formItem interface
+// Button implements Item interface
 type Button struct {
 	s        string
 	callback func()

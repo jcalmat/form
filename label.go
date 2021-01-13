@@ -7,7 +7,7 @@ import (
 	"github.com/jcalmat/form/input"
 )
 
-// Label implements formItem interface
+// Label implements Item interface
 type Label struct {
 	s      string
 	prefix string

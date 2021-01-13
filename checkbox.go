@@ -12,7 +12,7 @@ const (
 	checkbox_check   string = "☑"
 )
 
-// Checkbox implements formItem interface
+// Checkbox implements Item interface
 type Checkbox struct {
 	question string
 	prefix   string

@@ -8,7 +8,7 @@ import (
 	"github.com/jcalmat/form/input"
 )
 
-// TextField implements formItem interface
+// TextField implements Item interface
 type TextField struct {
 	question          string
 	prefix            string
