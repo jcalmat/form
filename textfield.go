@@ -1,87 +1,96 @@
 package form
 
-import "fmt"
+import (
+	"fmt"
+	"unicode/utf8"
 
-// TextField implements formItem interface
-type TextField struct {
+	"github.com/jcalmat/form/cursor"
+	"github.com/jcalmat/form/input"
+)
+
+// textField implements formItem interface
+type textField struct {
+	question          string
 	prefix            string
 	input             string
 	cursorPosition    int
 	minCursorPosition int
 }
 
-// NewTextField creates a new instance of TextField object
-func NewTextField(prefix string) *TextField {
-	return &TextField{
-		prefix:            prefix,
+var _ Item = (*textField)(nil)
+
+// NewTextField creates a new instance of textField object
+func NewTextField(question string) *textField {
+	return &textField{
+		question:          question,
 		input:             "",
-		minCursorPosition: len(prefix),
-		cursorPosition:    len(prefix),
+		minCursorPosition: utf8.RuneCountInString(question),
+		cursorPosition:    utf8.RuneCountInString(question),
 	}
 }
 
-func (s *TextField) moveCursor() {
-	if s.cursorPosition > len(s.input) {
-		s.cursorPosition = len(s.input)
-	}
-	if s.cursorPosition < 0 {
-		s.cursorPosition = 0
-	}
-
-	moveColumn(s.minCursorPosition + s.cursorPosition + 1)
-}
-
-func (s *TextField) write() {
-	if s.cursorPosition > len(s.input) {
-		s.cursorPosition = len(s.input)
-	}
-	if s.cursorPosition < 0 {
-		s.cursorPosition = 0
-	}
-
-	moveColumn(1)
+func (t *textField) write() {
+	cursor.MoveColumn(1)
 	clearLine()
-	write(s.prefix + "\u001b[37;1m" + s.input + "\u001b[0m")
-	s.moveCursor()
+	write(t.prefix + t.question + "\u001b[37;1m" + t.input + "\u001b[0m")
+	t.setCursorPosition()
 }
 
-func (s *TextField) pick() {
-	s.write()
+func (t *textField) pick() {}
+
+func (t *textField) unpick() {}
+
+func (t *textField) setCursorPosition() {
+	if t.cursorPosition > utf8.RuneCountInString(t.input) {
+		t.cursorPosition = utf8.RuneCountInString(t.input)
+	}
+	if t.cursorPosition < 0 {
+		t.cursorPosition = 0
+	}
+
+	cursor.MoveColumn(t.minCursorPosition + t.cursorPosition + 1)
 }
 
-func (s *TextField) unpick() {}
-
-func (s *TextField) handleInput(b []byte) {
-	if b[0] == 27 {
-		if b[1] == 91 {
-			switch b[2] {
-			case 67: // Right
-				s.cursorPosition++
-				s.moveCursor()
-			case 68: // Left
-				s.cursorPosition--
-				s.moveCursor()
-			}
-		}
+func (t *textField) handleInput(i input.I) {
+	if i.Is(input.RIGHT) {
+		t.cursorPosition++
+		t.setCursorPosition()
+		return
+	} else if i.Is(input.LEFT) {
+		t.cursorPosition--
+		t.setCursorPosition()
 		return
 	}
-	for _, c := range b {
-		if c >= 32 && c <= 126 {
-			s.input = fmt.Sprintf("%s%s%s", s.input[:s.cursorPosition], string(c), s.input[s.cursorPosition:])
-			s.cursorPosition++
-			s.write()
-		} else if c == 127 {
-			if s.cursorPosition > 0 {
-				s.input = s.input[:s.cursorPosition-1] + s.input[s.cursorPosition:]
-				s.cursorPosition--
-				s.write()
+
+	for _, c := range i {
+		if input.I([]byte{c}).Printable() {
+			t.input = fmt.Sprintf("%s%s%s", t.input[:t.cursorPosition], string(c), t.input[t.cursorPosition:])
+			t.cursorPosition++
+			t.write()
+		} else if input.I([]byte{c}).Is(input.DEL) {
+			if t.cursorPosition > 0 {
+				t.input = t.input[:t.cursorPosition-1] + t.input[t.cursorPosition:]
+				t.cursorPosition--
+				t.write()
 			}
 		}
 	}
 }
 
-func (c *TextField) selectable() bool { return true }
+func (t *textField) selectable() bool { return true }
 
-func (c *TextField) Answer() string {
-	return c.input
+func (t *textField) Answer() string {
+	return t.input
+}
+
+func (t *textField) displayChildren() bool { return t.input != "" }
+
+func (t *textField) setPrefix(prefix string) {
+	t.prefix = prefix
+	t.minCursorPosition = utf8.RuneCountInString(t.prefix) + utf8.RuneCountInString(t.question)
+	t.cursorPosition = t.minCursorPosition
+}
+
+func (t *textField) clearValue() {
+	t.input = ""
 }

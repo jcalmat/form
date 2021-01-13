@@ -1,92 +1,215 @@
 package form
 
 import (
-	"os"
-	"os/exec"
+	"fmt"
+	"strings"
+
+	"github.com/jcalmat/form/cursor"
+	"github.com/jcalmat/form/input"
 )
 
-type formItem interface {
+type Item interface {
+	// write writes the item where the cursor currently is
 	write()
+
+	// unpick tells the item that it is currently selected
 	pick()
+
+	// unpick tells the item that it is currently unselected
 	unpick()
-	handleInput([]byte)
+
+	// handleInput sniffs inputs byte by byte and process actions if needed
+	handleInput(input.I)
+
+	// selectable indicates if the item should be selectable of if it should
+	// be skipped when navigating in the item list
 	selectable() bool
+
+	// setCursorPosition asks the item to set the cursor position on the x axis
+	setCursorPosition()
+
+	// displayChildren assert that, given the current item properties status, its
+	// children can be display
+	displayChildren() bool
+
+	// setPrefix sets the item text prefix if relevant
+	setPrefix(string)
+
+	// clearValue reset the value to it's default state
+	clearValue()
+}
+
+type formItems []*formItem
+
+type formItem struct {
+	item     Item
+	parent   *formItem
+	children formItems
 }
 
 type form struct {
-	items  []formItem
+	items  formItems
 	active bool
 }
 
 // NewForm creates a new instance of form object
 func NewForm() *form {
 	return &form{
-		items:  make([]formItem, 0),
+		items:  make([]*formItem, 0),
 		active: false,
 	}
 }
 
-// Add adds formItems to the form object
-func (ps *form) Add(p ...formItem) {
-	ps.items = append(ps.items, p...)
+func (f *formItem) AddSubItems(c ...Item) *formItem {
+	for _, item := range c {
+		formItem := &formItem{item: item, parent: f}
+		formItem.setText()
+		f.children = append(f.children, formItem)
+	}
+	return f
 }
 
-func (ps *form) pick(index, offset int) int {
+func (f *formItem) setText() {
 
-	movePrevLine(index)
+	p := f.parent
+	parentsCount := 0
+	for {
+		if p.parent != nil {
+			parentsCount++
+			p = p.parent
+			continue
+		}
+		break
+	}
+
+	f.item.setPrefix(fmt.Sprintf("%s╰─", strings.Repeat("  ", parentsCount)))
+}
+
+// AddSubItem adds a subItem i dependant of the formItem f
+// The rules applied to display the subItem are specific to
+// each formItem
+func (f *formItem) AddSubItem(c Item) *formItem {
+	item := &formItem{item: c, parent: f}
+	item.setText()
+	f.children = append(f.children, item)
+	return item
+}
+
+// AddItem adds one formItem to the form object
+func (f *form) AddItem(p Item) *formItem {
+	item := &formItem{
+		item: p,
+	}
+	f.items = append(f.items, item)
+	return item
+}
+
+// AddItems adds many formItems to the form object
+func (f *form) AddItems(items ...Item) *form {
+	for _, i := range items {
+		item := &formItem{
+			item: i,
+		}
+		f.items = append(f.items, item)
+	}
+	return f
+}
+
+func (f formItems) visibleItems() []Item {
+	items := make([]Item, 0)
+	for _, v := range f {
+		items = append(items, v.item)
+		if v.children != nil && v.item.displayChildren() {
+			items = append(items, v.children.visibleItems()...)
+		}
+	}
+	return items
+}
+
+func (f *form) visibleItems() []Item {
+	return f.items.visibleItems()
+}
+
+func (f *form) pick(index, offset int) int {
+	cursor.MovePrevLine(index)
 
 	i := index + offset
+	visibleItems := f.visibleItems()
 
 	// Loop
 	if i < 0 {
-		i = len(ps.items) - 1
+		i = len(visibleItems) - 1
 	}
-	if i > len(ps.items)-1 {
+	if i > len(visibleItems)-1 {
 		i = 0
 	}
 
-	// Range over the form and first deselect then select the right one
-	// to place the cursor at the right place.
-	// Moving the cursor is handled by the pick() method.
-	for n, p := range ps.items {
+	// Range over the form and first unpick then pick the right one
+	// to move the cursor on y axis.
+	// Moving the cursor on x axis is handled by the pick() method.
+	for n, p := range visibleItems {
 		if n != i {
 			p.unpick()
 		}
-		write("\n")
 	}
 
-	// Move the cursor vertically at the right row and select it.
-	movePrevLine(len(ps.items) - i)
-	if ps.items[i].selectable() {
-		ps.items[i].pick()
+	// Move the cursor on y axis at the right row and select it.
+	if visibleItems[i].selectable() {
+		visibleItems[i].pick()
 	} else {
-		return ps.pick(i, offset)
+		return f.pick(i, offset)
 	}
+
+	f.displayItems()
+	cursor.MovePrevLine(len(visibleItems) - i)
+	visibleItems[i].setCursorPosition()
+
 	return i
 }
 
-func (ps *form) unpickAll(index int) {
-	// Move the cursor to the top of the form and individually unpick them.
-	movePrevLine(index)
+func (f *form) stop() {
+	f.active = false
+}
 
-	for _, p := range ps.items {
-		moveColumn(1)
-		p.unpick()
+func (f *form) displayItems() {
+	cursor.RestorePosition()
+
+	cursor.ClearBelow()
+
+	// Display all visible items.
+	for _, p := range f.visibleItems() {
+		p.write()
 		write("\n")
 	}
 }
 
-func (ps *form) stop() {
-	ps.active = false
+// clearHiddenItemsValues range over all items and subItems and reset the value
+// of the hidden ones
+func (f formItems) clearHiddenItemsValues() {
+	for _, formItem := range f {
+		if formItem.parent != nil && !formItem.parent.item.displayChildren() {
+			formItem.item.clearValue()
+		}
+		if formItem.children != nil {
+			formItem.children.clearHiddenItemsValues()
+		}
+	}
 }
 
-// Ask displays the formItems and handles the user's inputs
-func (ps *form) Ask() {
-	ps.active = true
+// Run displays the formItems and handles the user's inputs
+func (f *form) Run() {
+	cursor.StartBufferedSession()
+	defer cursor.RestoreSession()
+
+	f.active = true
+	visibleItems := f.visibleItems()
+
+	// Save cursor position at first line.
+	cursor.SavePosition()
 
 	// Do not process if there is no selectable formItem
 	var firstSelectable *int
-	for index, i := range ps.items {
+	for index, i := range visibleItems {
 		if i.selectable() {
 			firstSelectable = &index
 			break
@@ -96,65 +219,47 @@ func (ps *form) Ask() {
 		return
 	}
 
-	// Display all items.
-	for _, p := range ps.items {
-		p.write()
-		write("\n")
-	}
+	f.AddItem(NewButton(done_button, func() { f.stop() }))
+	f.AddItem(NewLabel(navigation_keys_message))
+	f.displayItems()
 
-	// Write a quit message
-	write(QUIT_KEY_MESSAGE)
+	cursor.DisableInputBuffering()
+	cursor.HideInputs()
+	defer cursor.RestoreEchoingState()
 
-	// Disable input buffering.
-	_ = exec.Command("stty", "-F", "/dev/tty", "cbreak", "min", "1").Run()
-	// Do not display entered characters on the screen.
-	_ = exec.Command("stty", "-F", "/dev/tty", "-echo").Run()
-	// Restore the echoing state when exiting.
-	defer exec.Command("stty", "-F", "/dev/tty", "echo").Run() //nolint
+	cursor.MovePrevLine(len(f.visibleItems()) - *firstSelectable)
+	selected := f.pick(*firstSelectable, 0)
 
-	movePrevLine(len(ps.items) - *firstSelectable)
-	selected := ps.pick(*firstSelectable, 0)
-
-	var b []byte
 	for {
+		visibleItems = f.visibleItems()
+
 		// Stop the main loop and clear the quit message
-		if !ps.active {
-			ps.unpickAll(selected)
-			clearLine()
+		if !f.active {
+			f.items.clearHiddenItemsValues()
 			break
 		}
 
-		// Flush the byte array.
-		b = make([]byte, 3)
+		i := input.Handle()
 
-		_, _ = os.Stdin.Read(b)
 		// Handle UP and DOWN arrow keys for vertical navigation.
-		if b[0] == 27 {
-			if b[1] == 91 {
-				switch b[2] {
-				case 65: // Up
-					selected = ps.pick(selected, -1)
-					continue
-				case 66: // Down
-					selected = ps.pick(selected, 1)
-					continue
-				}
-			}
-			if b[1] == 0 {
-				ps.stop()
-			}
+		if i.Is(input.UP) {
+			selected = f.pick(selected, -1)
+			continue
+		} else if i.Is(input.DOWN) {
+			selected = f.pick(selected, 1)
+			continue
 		}
+		if i.Is(input.ESC) {
+			f.stop()
+			continue
+		}
+
 		// Handle any other input and let the formItem process it.
-		ps.items[selected].handleInput(b)
+		visibleItems[selected].handleInput(i)
 
 		// Handle Enter key to automatically select the next formItem.
-		if len(b) > 0 && (b[0] == 10 || b[0] == 13) { // Enter
-			// Stop if the selected formItem is the last one.
-			if selected+1 == len(ps.items) {
-				ps.stop()
-				continue
-			}
-			selected = ps.pick(selected, 1)
+		if i.Is(input.ENTER) || i.Is(input.TAB) { // Enter or Tab keys
+			selected = f.pick(selected, 1)
 		}
 	}
 }

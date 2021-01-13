@@ -1,62 +1,90 @@
 package form
 
-const (
-	CHECKBOX_UNCHECK string = "☐"
-	CHECKBOX_CHECK   string = "☑"
+import (
+	"fmt"
+
+	"github.com/jcalmat/form/cursor"
+	"github.com/jcalmat/form/input"
 )
 
-// Checkbox implements formItem interface
-type Checkbox struct {
-	sentence string
+const (
+	checkbox_uncheck string = "☐"
+	checkbox_check   string = "☑"
+)
+
+// checkbox implements formItem interface
+type checkbox struct {
+	question string
+	prefix   string
 	checked  bool
 	selected bool
 }
 
-// NewCheckbox creates a new instance of Checkbox object
-func NewCheckbox(s string, checked bool) *Checkbox {
-	return &Checkbox{
-		sentence: s,
+var _ Item = (*checkbox)(nil)
+
+// NewCheckbox creates a new instance of checkbox object
+func NewCheckbox(question string, checked bool) *checkbox {
+	return &checkbox{
+		prefix:   "",
+		question: question,
 		checked:  checked,
 	}
 }
 
-func (c *Checkbox) write() {
-	var s string
-	s = CHECKBOX_UNCHECK + " " + c.sentence
+func (c *checkbox) write() {
+	var question string
+
+	checkbox := checkbox_uncheck
 	if c.checked {
-		s = "\u001b[32;1m" + CHECKBOX_CHECK + " " + c.sentence + "\u001b[0m"
+		checkbox = "\u001b[32;1m" + checkbox_check
 	}
 	if c.selected {
-		s = "\u001b[7m" + s + " \u001b[0m"
+		checkbox = "\u001b[7m" + checkbox
 	}
+
+	question = fmt.Sprintf("%s%s %s\u001b[0m", c.prefix, checkbox, c.question)
+
 	clearLine()
-	write(s)
-	moveColumn(1)
+	write(question)
+	cursor.MoveColumn(1)
 }
 
-func (c *Checkbox) handleInput(b []byte) {
-	if len(b) > 0 && (b[0] == 10 || b[0] == 13) { // Enter
+func (c *checkbox) handleInput(i input.I) {
+	if i.Is(input.ENTER) {
 		c.toggle()
 	}
 }
 
-func (c *Checkbox) pick() {
+func (c *checkbox) setCursorPosition() {}
+
+func (c *checkbox) clearValue() {
+	c.checked = false
+}
+
+func (c *checkbox) pick() {
 	c.selected = true
-	c.write()
+	cursor.HideCursor()
 }
 
-func (c *Checkbox) unpick() {
+func (c *checkbox) unpick() {
 	c.selected = false
-	c.write()
+	cursor.DisplayCursor()
 }
 
-func (c *Checkbox) toggle() {
+func (c *checkbox) toggle() {
 	c.checked = !c.checked
-	c.pick()
 }
 
-func (c *Checkbox) selectable() bool { return true }
-
-func (c *Checkbox) Answer() bool {
+func (c *checkbox) displayChildren() bool {
 	return c.checked
+}
+
+func (c *checkbox) selectable() bool { return true }
+
+func (c *checkbox) Answer() bool {
+	return c.checked
+}
+
+func (c *checkbox) setPrefix(prefix string) {
+	c.prefix = prefix
 }
