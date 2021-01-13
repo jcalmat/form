@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/jcalmat/form/cursor"
+	"github.com/jcalmat/form/input"
 )
 
 const (
@@ -30,42 +31,6 @@ func NewCheckbox(question string, checked bool) *checkbox {
 	}
 }
 
-// AddDependance adds child to the current checkbox.
-// If the value of the checkbox becomes true, the child checkbox will be
-// displayed.
-// If the value of the checkbox becomes false, the child checkbox will be
-// disabled and its value will automatically be set to false.
-// func (c *checkbox) AddDependance(child *checkbox) {
-// 	child.parent = c
-// 	c.children = append(c.children, child)
-// 	// if !c.visible || !c.checked {
-// 	// 	child.visible = false
-// 	// }
-
-// 	// p := child.parent
-// 	// parentsCount := 1
-// 	// for {
-// 	// 	if p.parent != nil {
-// 	// 		parentsCount++
-// 	// 		continue
-// 	// 	}
-// 	// 	break
-// 	// }
-// 	// child.question = fmt.Sprintf("%s╰─%s", strings.Repeat("  ", parentsCount), child.question)
-// 	// child.minCursorPosition = parentsCount + 2
-// }
-
-// func (c *checkbox) Children() []*checkbox {
-// 	ret := make([]*checkbox, 0)
-// 	// children := c.children
-// 	// ret = append(ret, children...)
-// 	// for i := 0; i < len(children); i++ {
-// 	// 	ret = append(ret, children[i].Children()...)
-// 	// }
-
-// 	return ret
-// }
-
 func (c *checkbox) write() {
 	var question string
 
@@ -84,8 +49,8 @@ func (c *checkbox) write() {
 	cursor.MoveColumn(1)
 }
 
-func (c *checkbox) handleInput(b []byte) {
-	if len(b) > 0 && (b[0] == 10 || b[0] == 13) { // Enter
+func (c *checkbox) handleInput(i input.I) {
+	if i.Is(input.ENTER) {
 		c.toggle()
 	}
 }

@@ -2,10 +2,10 @@ package form
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/jcalmat/form/cursor"
+	"github.com/jcalmat/form/input"
 )
 
 type Item interface {
@@ -19,7 +19,7 @@ type Item interface {
 	unpick()
 
 	// handleInput sniffs inputs byte by byte and process actions if needed
-	handleInput([]byte)
+	handleInput(input.I)
 
 	// selectable indicates if the item should be selectable of if it should
 	// be skipped when navigating in the item list
@@ -82,6 +82,9 @@ func (f *formItem) setText() {
 	f.item.setPrefix(fmt.Sprintf("%s╰─", strings.Repeat("  ", parentsCount)))
 }
 
+// AddSubItem adds a subItem i dependant of the formItem f
+// The rules applied to display the subItem are specific to
+// each formItem
 func (f *formItem) AddSubItem(c Item) *formItem {
 	item := &formItem{item: c, parent: f}
 	item.setText()
@@ -89,13 +92,24 @@ func (f *formItem) AddSubItem(c Item) *formItem {
 	return item
 }
 
-// Add adds formItems to the form object
+// AddItem adds one formItem to the form object
 func (f *form) AddItem(p Item) *formItem {
 	item := &formItem{
 		item: p,
 	}
 	f.items = append(f.items, item)
 	return item
+}
+
+// AddItems adds many formItems to the form object
+func (f *form) AddItems(items ...Item) *form {
+	for _, i := range items {
+		item := &formItem{
+			item: i,
+		}
+		f.items = append(f.items, item)
+	}
+	return f
 }
 
 func (f formItems) visibleItems() []Item {
@@ -137,7 +151,6 @@ func (f *form) pick(index, offset int) int {
 	}
 
 	// Move the cursor vertically at the right row and select it.
-	// movePrevLine(len(visibleItems) - i)
 	if visibleItems[i].selectable() {
 		visibleItems[i].pick()
 	} else {
@@ -149,17 +162,6 @@ func (f *form) pick(index, offset int) int {
 	visibleItems[i].setCursorPosition()
 
 	return i
-}
-
-func (f *form) unpickAll(index int) {
-	// Move the cursor to the top of the form and individually unpick them.
-	cursor.MovePrevLine(index)
-
-	for _, p := range f.visibleItems() {
-		cursor.MoveColumn(1)
-		p.unpick()
-		write("\n")
-	}
 }
 
 func (f *form) stop() {
@@ -211,42 +213,35 @@ func (f *form) Run() {
 
 	cursor.MovePrevLine(len(f.visibleItems()) - *firstSelectable)
 	selected := f.pick(*firstSelectable, 0)
-	var b []byte
+
 	for {
 		visibleItems = f.visibleItems()
 
 		// Stop the main loop and clear the quit message
 		if !f.active {
-			f.unpickAll(selected)
-			clearLine()
 			break
 		}
 
-		// Flush the byte array.
-		b = make([]byte, 3)
+		i := input.Handle()
 
-		_, _ = os.Stdin.Read(b)
 		// Handle UP and DOWN arrow keys for vertical navigation.
-		if b[0] == 27 {
-			if b[1] == 91 {
-				switch b[2] {
-				case 65: // Up
-					selected = f.pick(selected, -1)
-					continue
-				case 66: // Down
-					selected = f.pick(selected, 1)
-					continue
-				}
-			}
-			if b[1] == 0 {
-				f.stop()
-			}
+		if i.Is(input.UP) {
+			selected = f.pick(selected, -1)
+			continue
+		} else if i.Is(input.DOWN) {
+			selected = f.pick(selected, 1)
+			continue
 		}
+		if i.Is(input.ESC) {
+			f.stop()
+			continue
+		}
+
 		// Handle any other input and let the formItem process it.
-		visibleItems[selected].handleInput(b)
+		visibleItems[selected].handleInput(i)
 
 		// Handle Enter key to automatically select the next formItem.
-		if len(b) > 0 && (b[0] == 10 || b[0] == 13 || b[0] == 9) { // Enter or Tab keys
+		if i.Is(input.ENTER) || i.Is(input.TAB) { // Enter or Tab keys
 			selected = f.pick(selected, 1)
 		}
 	}

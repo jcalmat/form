@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/jcalmat/form/cursor"
+	"github.com/jcalmat/form/input"
 )
 
 // button implements formItem interface
@@ -44,8 +45,8 @@ func (s *button) unpick() {
 	cursor.DisplayCursor()
 }
 
-func (s *button) handleInput(b []byte) {
-	if len(b) > 0 && (b[0] == 10 || b[0] == 13) { // Enter
+func (s *button) handleInput(i input.I) {
+	if i.Is(input.ENTER) {
 		s.callback()
 	}
 }

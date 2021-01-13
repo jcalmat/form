@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/jcalmat/form"
 )
 
@@ -17,12 +15,13 @@ func main() {
 
 	// Add these fields to the form
 	myform.AddItem(title)
-	myform.AddItem(question0).AddSubItem(question0_1).AddSubItem(form.NewLabel("Amazing!"))
+
+	myform.AddItem(question0).
+		AddSubItem(question0_1)
 
 	// Display your form
 	myform.Run()
 
 	// Handle the answers
-	fmt.Printf(`question0 answer = %v
-question0_1 answer = %v`, question0.Answer(), question0_1.Answer())
+	// fmt.Printf("question0 answer = %v, question0_1 answer = %v", question0.Answer(), question0_1.Answer())
 }

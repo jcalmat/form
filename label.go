@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/jcalmat/form/cursor"
+	"github.com/jcalmat/form/input"
 )
 
 // label implements formItem interface
@@ -31,7 +32,7 @@ func (s *label) pick() {}
 
 func (s *label) unpick() {}
 
-func (s *label) handleInput(b []byte) {}
+func (s *label) handleInput(i input.I) {}
 
 func (c *label) selectable() bool { return false }
 

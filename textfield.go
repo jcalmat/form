@@ -5,6 +5,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/jcalmat/form/cursor"
+	"github.com/jcalmat/form/input"
 )
 
 // textField implements formItem interface
@@ -50,26 +51,21 @@ func (t *textField) setCursorPosition() {
 	cursor.MoveColumn(t.minCursorPosition + t.cursorPosition + 1)
 }
 
-func (t *textField) handleInput(b []byte) {
-	if b[0] == 27 {
-		if b[1] == 91 {
-			switch b[2] {
-			case 67: // Right
-				t.cursorPosition++
-				t.setCursorPosition()
-			case 68: // Left
-				t.cursorPosition--
-				t.setCursorPosition()
-			}
-		}
-		return
+func (t *textField) handleInput(i input.I) {
+	if i.Is(input.RIGHT) {
+		t.cursorPosition++
+		t.setCursorPosition()
+	} else if i.Is(input.LEFT) {
+		t.cursorPosition--
+		t.setCursorPosition()
 	}
-	for _, c := range b {
-		if c >= 32 && c <= 126 {
+
+	for _, c := range i {
+		if input.I([]byte{c}).Printable() {
 			t.input = fmt.Sprintf("%s%s%s", t.input[:t.cursorPosition], string(c), t.input[t.cursorPosition:])
 			t.cursorPosition++
 			t.write()
-		} else if c == 127 {
+		} else if input.I([]byte{c}).Is(input.DEL) {
 			if t.cursorPosition > 0 {
 				t.input = t.input[:t.cursorPosition-1] + t.input[t.cursorPosition:]
 				t.cursorPosition--
@@ -88,7 +84,6 @@ func (t *textField) Answer() string {
 func (t *textField) displayChildren() bool { return t.input != "" }
 
 func (t *textField) setPrefix(prefix string) {
-	write(string(utf8.RuneCountInString(prefix)))
 	t.prefix = prefix
 	t.minCursorPosition = utf8.RuneCountInString(t.prefix) + utf8.RuneCountInString(t.question)
 	t.cursorPosition = t.minCursorPosition
