@@ -18,11 +18,11 @@ type Button struct {
 var _ Item = (*Button)(nil)
 
 // NewButton creates a new instance of Button object
-func NewButton(s string, callback func()) *Button {
-	return &Button{
+func NewButton(s string, callback func()) *FormItem {
+	return NewFormItem(&Button{
 		s:        s,
 		callback: callback,
-	}
+	})
 }
 
 func (b *Button) write() {

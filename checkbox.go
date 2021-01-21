@@ -23,12 +23,12 @@ type Checkbox struct {
 var _ Item = (*Checkbox)(nil)
 
 // NewCheckbox creates a new instance of Checkbox object
-func NewCheckbox(question string, checked bool) *Checkbox {
-	return &Checkbox{
+func NewCheckbox(question string, checked bool) *FormItem {
+	return NewFormItem(&Checkbox{
 		prefix:   "",
 		question: question,
 		checked:  checked,
-	}
+	})
 }
 
 func (c *Checkbox) write() {

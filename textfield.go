@@ -20,13 +20,13 @@ type TextField struct {
 var _ Item = (*TextField)(nil)
 
 // NewTextField creates a new instance of TextField object
-func NewTextField(question string) *TextField {
-	return &TextField{
+func NewTextField(question string) *FormItem {
+	return NewFormItem(&TextField{
 		question:          question,
 		input:             "",
 		minCursorPosition: utf8.RuneCountInString(question),
 		cursorPosition:    utf8.RuneCountInString(question),
-	}
+	})
 }
 
 func (t *TextField) write() {

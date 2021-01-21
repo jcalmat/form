@@ -14,14 +14,14 @@ type FormItem struct {
 	children FormItems
 }
 
-func (f *FormItem) AddItems(c ...Item) *FormItem {
-	for _, item := range c {
-		formItem := &FormItem{item: item, parent: f}
-		formItem.setText()
-		f.children = append(f.children, formItem)
-	}
-	return f
-}
+// func (f *FormItem) AddItems(c ...Item) *FormItem {
+// 	for _, item := range c {
+// 		formItem := &FormItem{item: item, parent: f}
+// 		formItem.setText()
+// 		f.children = append(f.children, formItem)
+// 	}
+// 	return f
+// }
 
 func (f *FormItem) setText() {
 
@@ -42,11 +42,12 @@ func (f *FormItem) setText() {
 // AddItem adds a subItem i dependant of the FormItem f
 // The rules applied to display the subItem are specific to
 // each FormItem
-func (f *FormItem) AddItem(c Item) *FormItem {
-	item := &FormItem{item: c, parent: f}
-	item.setText()
-	f.children = append(f.children, item)
-	return item
+func (f *FormItem) AddItem(formItem *FormItem) *FormItem {
+	formItem.parent = f
+	// item := &FormItem{item: c, parent: f}
+	formItem.setText()
+	f.children = append(f.children, formItem)
+	return formItem
 }
 
 func (f *FormItem) Item() Item {

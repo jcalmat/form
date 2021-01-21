@@ -16,10 +16,10 @@ type Label struct {
 var _ Item = (*Label)(nil)
 
 // NewLabel creates a new instance of Label object
-func NewLabel(s string) *Label {
-	return &Label{
+func NewLabel(s string) *FormItem {
+	return NewFormItem(&Label{
 		s: s,
-	}
+	})
 }
 
 func (l *Label) write() {

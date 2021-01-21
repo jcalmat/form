@@ -19,24 +19,21 @@ func NewForm() *Form {
 }
 
 // AddItem adds one FormItem to the Form object
-func (f *Form) AddItem(p Item) *FormItem {
-	item := &FormItem{
-		item: p,
-	}
-	f.items = append(f.items, item)
-	return item
+func (f *Form) AddItem(formItem *FormItem) *FormItem {
+	f.items = append(f.items, formItem)
+	return formItem
 }
 
-// AddItems adds many FormItems to the Form object
-func (f *Form) AddItems(items ...Item) *Form {
-	for _, i := range items {
-		item := &FormItem{
-			item: i,
-		}
-		f.items = append(f.items, item)
-	}
-	return f
-}
+// // AddItems adds many FormItems to the Form object
+// func (f *Form) AddItems(items ...Item) *Form {
+// 	for _, i := range items {
+// 		item := &FormItem{
+// 			item: i,
+// 		}
+// 		f.items = append(f.items, item)
+// 	}
+// 	return f
+// }
 
 func (f *Form) visibleItems() []Item {
 	return f.items.visibleItems()
