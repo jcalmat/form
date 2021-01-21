@@ -31,4 +31,6 @@ type Item interface {
 
 	// clearValue reset the value to it's default state
 	clearValue()
+
+	answer() interface{}
 }
