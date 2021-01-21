@@ -49,6 +49,10 @@ func (f *FormItem) AddItem(c Item) *FormItem {
 	return item
 }
 
+func (f *FormItem) Item() Item {
+	return f.item
+}
+
 func (f FormItems) visibleItems() []Item {
 	items := make([]Item, 0)
 	for _, v := range f {
