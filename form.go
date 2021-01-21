@@ -100,6 +100,10 @@ func (f *Form) Run() {
 	f.active = true
 	visibleItems := f.visibleItems()
 
+	for _, item := range f.items {
+		item.setText()
+	}
+
 	// Save cursor position at first line.
 	cursor.SavePosition()
 
