@@ -27,12 +27,6 @@ func (f *Form) AddItem(p Item) *FormItem {
 	return item
 }
 
-// AddItem adds one FormItem to the Form object
-func (f *Form) AddFormItem(item *FormItem) *FormItem {
-	f.items = append(f.items, item)
-	return item
-}
-
 // AddItems adds many FormItems to the Form object
 func (f *Form) AddItems(items ...Item) *Form {
 	for _, i := range items {
