@@ -76,3 +76,7 @@ func (f FormItems) clearHiddenItemsValues() {
 		}
 	}
 }
+
+func (f *FormItem) Answer() interface{} {
+	return f.item.answer()
+}

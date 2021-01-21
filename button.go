@@ -62,3 +62,5 @@ func (b *Button) displayChildren() bool { return true }
 func (b *Button) setPrefix(prefix string) {
 	b.prefix = prefix
 }
+
+func (b *Button) answer() interface{} { return nil }

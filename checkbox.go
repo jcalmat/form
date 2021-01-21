@@ -81,6 +81,10 @@ func (c *Checkbox) displayChildren() bool {
 
 func (c *Checkbox) selectable() bool { return true }
 
+func (c *Checkbox) answer() interface{} {
+	return c.Answer()
+}
+
 func (c *Checkbox) Answer() bool {
 	return c.checked
 }

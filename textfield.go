@@ -83,6 +83,10 @@ func (t *TextField) Answer() string {
 	return t.input
 }
 
+func (t *TextField) answer() interface{} {
+	return t.Answer()
+}
+
 func (t *TextField) displayChildren() bool { return t.input != "" }
 
 func (t *TextField) setPrefix(prefix string) {

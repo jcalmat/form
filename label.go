@@ -45,3 +45,5 @@ func (l *Label) displayChildren() bool { return true }
 func (l *Label) setPrefix(prefix string) {
 	l.prefix = prefix
 }
+
+func (l *Label) answer() interface{} { return nil }
