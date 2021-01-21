@@ -1,71 +1,25 @@
 package form
 
 import (
-	"fmt"
-	"strings"
-
 	"github.com/jcalmat/form/cursor"
 	"github.com/jcalmat/form/input"
 )
 
-type FormItems []*FormItem
-
-type FormItem struct {
-	item     Item
-	parent   *FormItem
-	children FormItems
-}
-
-type form struct {
+type Form struct {
 	items  FormItems
 	active bool
 }
 
-// NewForm creates a new instance of form object
-func NewForm() *form {
-	return &form{
+// NewForm creates a new instance of Form object
+func NewForm() *Form {
+	return &Form{
 		items:  make([]*FormItem, 0),
 		active: false,
 	}
 }
 
-func (f *FormItem) AddSubItems(c ...Item) *FormItem {
-	for _, item := range c {
-		formItem := &FormItem{item: item, parent: f}
-		formItem.setText()
-		f.children = append(f.children, formItem)
-	}
-	return f
-}
-
-func (f *FormItem) setText() {
-
-	p := f.parent
-	parentsCount := 0
-	for {
-		if p.parent != nil {
-			parentsCount++
-			p = p.parent
-			continue
-		}
-		break
-	}
-
-	f.item.setPrefix(fmt.Sprintf("%s╰─", strings.Repeat("  ", parentsCount)))
-}
-
-// AddSubItem adds a subItem i dependant of the FormItem f
-// The rules applied to display the subItem are specific to
-// each FormItem
-func (f *FormItem) AddSubItem(c Item) *FormItem {
-	item := &FormItem{item: c, parent: f}
-	item.setText()
-	f.children = append(f.children, item)
-	return item
-}
-
-// AddItem adds one FormItem to the form object
-func (f *form) AddItem(p Item) *FormItem {
+// AddItem adds one FormItem to the Form object
+func (f *Form) AddItem(p Item) *FormItem {
 	item := &FormItem{
 		item: p,
 	}
@@ -73,8 +27,14 @@ func (f *form) AddItem(p Item) *FormItem {
 	return item
 }
 
-// AddItems adds many FormItems to the form object
-func (f *form) AddItems(items ...Item) *form {
+// AddItem adds one FormItem to the Form object
+func (f *Form) AddFormItem(item *FormItem) *FormItem {
+	f.items = append(f.items, item)
+	return item
+}
+
+// AddItems adds many FormItems to the Form object
+func (f *Form) AddItems(items ...Item) *Form {
 	for _, i := range items {
 		item := &FormItem{
 			item: i,
@@ -84,22 +44,11 @@ func (f *form) AddItems(items ...Item) *form {
 	return f
 }
 
-func (f FormItems) visibleItems() []Item {
-	items := make([]Item, 0)
-	for _, v := range f {
-		items = append(items, v.item)
-		if v.children != nil && v.item.displayChildren() {
-			items = append(items, v.children.visibleItems()...)
-		}
-	}
-	return items
-}
-
-func (f *form) visibleItems() []Item {
+func (f *Form) visibleItems() []Item {
 	return f.items.visibleItems()
 }
 
-func (f *form) pick(index, offset int) int {
+func (f *Form) pick(index, offset int) int {
 	cursor.MovePrevLine(index)
 
 	i := index + offset
@@ -113,7 +62,7 @@ func (f *form) pick(index, offset int) int {
 		i = 0
 	}
 
-	// Range over the form and first unpick then pick the right one
+	// Range over the Form and first unpick then pick the right one
 	// to move the cursor on y axis.
 	// Moving the cursor on x axis is handled by the pick() method.
 	for n, p := range visibleItems {
@@ -136,11 +85,11 @@ func (f *form) pick(index, offset int) int {
 	return i
 }
 
-func (f *form) stop() {
+func (f *Form) stop() {
 	f.active = false
 }
 
-func (f *form) displayItems() {
+func (f *Form) displayItems() {
 	cursor.RestorePosition()
 
 	cursor.ClearBelow()
@@ -152,21 +101,8 @@ func (f *form) displayItems() {
 	}
 }
 
-// clearHiddenItemsValues range over all items and subItems and reset the value
-// of the hidden ones
-func (f FormItems) clearHiddenItemsValues() {
-	for _, formItem := range f {
-		if formItem.parent != nil && !formItem.parent.item.displayChildren() {
-			formItem.item.clearValue()
-		}
-		if formItem.children != nil {
-			formItem.children.clearHiddenItemsValues()
-		}
-	}
-}
-
 // Run displays the formItems and handles the user's inputs
-func (f *form) Run() {
+func (f *Form) Run() {
 	cursor.StartBufferedSession()
 	defer cursor.RestoreSession()
 

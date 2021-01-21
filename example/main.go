@@ -19,10 +19,11 @@ func main() {
 	// Add these fields to the form
 	myform.AddItem(title)
 
+	// Add items dependant on one another
 	myform.AddItem(question0).
-		AddSubItem(question0_1).
-		AddSubItem(question0_2).
-		AddSubItem(form.NewLabel("Amazing!"))
+		AddItem(question0_1).
+		AddItem(question0_2).
+		AddItem(form.NewLabel("Amazing!"))
 
 	// Display your form
 	myform.Run()
