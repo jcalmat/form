@@ -8,68 +8,37 @@ import (
 	"github.com/jcalmat/form/input"
 )
 
-type Item interface {
-	// write writes the item where the cursor currently is
-	write()
+type FormItems []*FormItem
 
-	// unpick tells the item that it is currently selected
-	pick()
-
-	// unpick tells the item that it is currently unselected
-	unpick()
-
-	// handleInput sniffs inputs byte by byte and process actions if needed
-	handleInput(input.I)
-
-	// selectable indicates if the item should be selectable of if it should
-	// be skipped when navigating in the item list
-	selectable() bool
-
-	// setCursorPosition asks the item to set the cursor position on the x axis
-	setCursorPosition()
-
-	// displayChildren assert that, given the current item properties status, its
-	// children can be display
-	displayChildren() bool
-
-	// setPrefix sets the item text prefix if relevant
-	setPrefix(string)
-
-	// clearValue reset the value to it's default state
-	clearValue()
-}
-
-type formItems []*formItem
-
-type formItem struct {
+type FormItem struct {
 	item     Item
-	parent   *formItem
-	children formItems
+	parent   *FormItem
+	children FormItems
 }
 
 type form struct {
-	items  formItems
+	items  FormItems
 	active bool
 }
 
 // NewForm creates a new instance of form object
 func NewForm() *form {
 	return &form{
-		items:  make([]*formItem, 0),
+		items:  make([]*FormItem, 0),
 		active: false,
 	}
 }
 
-func (f *formItem) AddSubItems(c ...Item) *formItem {
+func (f *FormItem) AddSubItems(c ...Item) *FormItem {
 	for _, item := range c {
-		formItem := &formItem{item: item, parent: f}
+		formItem := &FormItem{item: item, parent: f}
 		formItem.setText()
 		f.children = append(f.children, formItem)
 	}
 	return f
 }
 
-func (f *formItem) setText() {
+func (f *FormItem) setText() {
 
 	p := f.parent
 	parentsCount := 0
@@ -85,29 +54,29 @@ func (f *formItem) setText() {
 	f.item.setPrefix(fmt.Sprintf("%s╰─", strings.Repeat("  ", parentsCount)))
 }
 
-// AddSubItem adds a subItem i dependant of the formItem f
+// AddSubItem adds a subItem i dependant of the FormItem f
 // The rules applied to display the subItem are specific to
-// each formItem
-func (f *formItem) AddSubItem(c Item) *formItem {
-	item := &formItem{item: c, parent: f}
+// each FormItem
+func (f *FormItem) AddSubItem(c Item) *FormItem {
+	item := &FormItem{item: c, parent: f}
 	item.setText()
 	f.children = append(f.children, item)
 	return item
 }
 
-// AddItem adds one formItem to the form object
-func (f *form) AddItem(p Item) *formItem {
-	item := &formItem{
+// AddItem adds one FormItem to the form object
+func (f *form) AddItem(p Item) *FormItem {
+	item := &FormItem{
 		item: p,
 	}
 	f.items = append(f.items, item)
 	return item
 }
 
-// AddItems adds many formItems to the form object
+// AddItems adds many FormItems to the form object
 func (f *form) AddItems(items ...Item) *form {
 	for _, i := range items {
-		item := &formItem{
+		item := &FormItem{
 			item: i,
 		}
 		f.items = append(f.items, item)
@@ -115,7 +84,7 @@ func (f *form) AddItems(items ...Item) *form {
 	return f
 }
 
-func (f formItems) visibleItems() []Item {
+func (f FormItems) visibleItems() []Item {
 	items := make([]Item, 0)
 	for _, v := range f {
 		items = append(items, v.item)
@@ -185,7 +154,7 @@ func (f *form) displayItems() {
 
 // clearHiddenItemsValues range over all items and subItems and reset the value
 // of the hidden ones
-func (f formItems) clearHiddenItemsValues() {
+func (f FormItems) clearHiddenItemsValues() {
 	for _, formItem := range f {
 		if formItem.parent != nil && !formItem.parent.item.displayChildren() {
 			formItem.item.clearValue()
