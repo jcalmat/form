@@ -25,6 +25,9 @@ type FormItem struct {
 
 func (f *FormItem) setText() {
 
+	if f.parent == nil {
+		return
+	}
 	p := f.parent
 	parentsCount := 0
 	for {
