@@ -101,7 +101,7 @@ func (f *Form) Run() {
 	visibleItems := f.visibleItems()
 
 	for _, item := range f.items {
-		item.setText()
+		item.setTextRecursive()
 	}
 
 	// Save cursor position at first line.

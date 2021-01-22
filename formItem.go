@@ -23,6 +23,15 @@ type FormItem struct {
 // 	return f
 // }
 
+func (f *FormItem) setTextRecursive() {
+	for _, i := range f.children {
+		i.setText()
+		if len(i.children) > 0 {
+			i.setTextRecursive()
+		}
+	}
+}
+
 func (f *FormItem) setText() {
 
 	if f.parent == nil {
@@ -47,8 +56,6 @@ func (f *FormItem) setText() {
 // each FormItem
 func (f *FormItem) AddItem(formItem *FormItem) *FormItem {
 	formItem.parent = f
-	// item := &FormItem{item: c, parent: f}
-	formItem.setText()
 	f.children = append(f.children, formItem)
 	return formItem
 }
