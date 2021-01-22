@@ -7,25 +7,25 @@ import (
 	"github.com/jcalmat/form/input"
 )
 
-// Button implements Item interface
-type Button struct {
+// button implements item interface
+type button struct {
 	s        string
 	callback func()
 	prefix   string
 	selected bool
 }
 
-var _ Item = (*Button)(nil)
+var _ item = (*button)(nil)
 
-// NewButton creates a new instance of Button object
-func NewButton(s string, callback func()) *Button {
-	return &Button{
+// NewButton creates a new instance of button object
+func NewButton(s string, callback func()) *FormItem {
+	return NewFormItem(&button{
 		s:        s,
 		callback: callback,
-	}
+	})
 }
 
-func (b *Button) write() {
+func (b *button) write() {
 	cursor.MoveColumn(1)
 	clearLine()
 	if b.selected {
@@ -35,30 +35,32 @@ func (b *Button) write() {
 	}
 }
 
-func (b *Button) pick() {
+func (b *button) pick() {
 	b.selected = true
 	cursor.HideCursor()
 }
 
-func (b *Button) unpick() {
+func (b *button) unpick() {
 	b.selected = false
 	cursor.DisplayCursor()
 }
 
-func (b *Button) handleInput(i input.I) {
+func (b *button) handleInput(i input.I) {
 	if i.Is(input.ENTER) {
 		b.callback()
 	}
 }
 
-func (b *Button) selectable() bool { return true }
+func (b *button) selectable() bool { return true }
 
-func (b *Button) setCursorPosition() {}
+func (b *button) setCursorPosition() {}
 
-func (b *Button) clearValue() {}
+func (b *button) clearValue() {}
 
-func (b *Button) displayChildren() bool { return true }
+func (b *button) displayChildren() bool { return true }
 
-func (b *Button) setPrefix(prefix string) {
+func (b *button) setPrefix(prefix string) {
 	b.prefix = prefix
 }
+
+func (b *button) answer() interface{} { return nil }
