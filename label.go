@@ -7,43 +7,43 @@ import (
 	"github.com/jcalmat/form/input"
 )
 
-// Label implements Item interface
-type Label struct {
+// label implements Item interface
+type label struct {
 	s      string
 	prefix string
 }
 
-var _ Item = (*Label)(nil)
+var _ Item = (*label)(nil)
 
-// NewLabel creates a new instance of Label object
+// NewLabel creates a new instance of label object
 func NewLabel(s string) *FormItem {
-	return NewFormItem(&Label{
+	return NewFormItem(&label{
 		s: s,
 	})
 }
 
-func (l *Label) write() {
+func (l *label) write() {
 	cursor.MoveColumn(1)
 	clearLine()
 	write(fmt.Sprintf("%s%s", l.prefix, l.s))
 }
 
-func (l *Label) pick() {}
+func (l *label) pick() {}
 
-func (l *Label) unpick() {}
+func (l *label) unpick() {}
 
-func (l *Label) handleInput(i input.I) {}
+func (l *label) handleInput(i input.I) {}
 
-func (l *Label) selectable() bool { return false }
+func (l *label) selectable() bool { return false }
 
-func (l *Label) setCursorPosition() {}
+func (l *label) setCursorPosition() {}
 
-func (l *Label) clearValue() {}
+func (l *label) clearValue() {}
 
-func (l *Label) displayChildren() bool { return true }
+func (l *label) displayChildren() bool { return true }
 
-func (l *Label) setPrefix(prefix string) {
+func (l *label) setPrefix(prefix string) {
 	l.prefix = prefix
 }
 
-func (l *Label) answer() interface{} { return nil }
+func (l *label) answer() interface{} { return nil }

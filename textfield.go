@@ -8,8 +8,8 @@ import (
 	"github.com/jcalmat/form/input"
 )
 
-// TextField implements Item interface
-type TextField struct {
+// textField implements Item interface
+type textField struct {
 	question          string
 	prefix            string
 	input             string
@@ -17,11 +17,11 @@ type TextField struct {
 	minCursorPosition int
 }
 
-var _ Item = (*TextField)(nil)
+var _ Item = (*textField)(nil)
 
-// NewTextField creates a new instance of TextField object
+// NewTextField creates a new instance of textField object
 func NewTextField(question string) *FormItem {
-	return NewFormItem(&TextField{
+	return NewFormItem(&textField{
 		question:          question,
 		input:             "",
 		minCursorPosition: utf8.RuneCountInString(question),
@@ -29,18 +29,18 @@ func NewTextField(question string) *FormItem {
 	})
 }
 
-func (t *TextField) write() {
+func (t *textField) write() {
 	cursor.MoveColumn(1)
 	clearLine()
 	write(t.prefix + t.question + "\u001b[37;1m" + t.input + "\u001b[0m")
 	t.setCursorPosition()
 }
 
-func (t *TextField) pick() {}
+func (t *textField) pick() {}
 
-func (t *TextField) unpick() {}
+func (t *textField) unpick() {}
 
-func (t *TextField) setCursorPosition() {
+func (t *textField) setCursorPosition() {
 	if t.cursorPosition > utf8.RuneCountInString(t.input) {
 		t.cursorPosition = utf8.RuneCountInString(t.input)
 	}
@@ -51,7 +51,7 @@ func (t *TextField) setCursorPosition() {
 	cursor.MoveColumn(t.minCursorPosition + t.cursorPosition + 1)
 }
 
-func (t *TextField) handleInput(i input.I) {
+func (t *textField) handleInput(i input.I) {
 	if i.Is(input.RIGHT) {
 		t.cursorPosition++
 		t.setCursorPosition()
@@ -77,24 +77,20 @@ func (t *TextField) handleInput(i input.I) {
 	}
 }
 
-func (t *TextField) selectable() bool { return true }
+func (t *textField) selectable() bool { return true }
 
-func (t *TextField) Answer() string {
+func (t *textField) answer() interface{} {
 	return t.input
 }
 
-func (t *TextField) answer() interface{} {
-	return t.Answer()
-}
+func (t *textField) displayChildren() bool { return t.input != "" }
 
-func (t *TextField) displayChildren() bool { return t.input != "" }
-
-func (t *TextField) setPrefix(prefix string) {
+func (t *textField) setPrefix(prefix string) {
 	t.prefix = prefix
 	t.minCursorPosition = utf8.RuneCountInString(t.prefix) + utf8.RuneCountInString(t.question)
 	t.cursorPosition = t.minCursorPosition
 }
 
-func (t *TextField) clearValue() {
+func (t *textField) clearValue() {
 	t.input = ""
 }
