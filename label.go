@@ -7,13 +7,13 @@ import (
 	"github.com/jcalmat/form/input"
 )
 
-// label implements Item interface
+// label implements item interface
 type label struct {
 	s      string
 	prefix string
 }
 
-var _ Item = (*label)(nil)
+var _ item = (*label)(nil)
 
 // NewLabel creates a new instance of label object
 func NewLabel(s string) *FormItem {

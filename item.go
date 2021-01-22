@@ -2,7 +2,7 @@ package form
 
 import "github.com/jcalmat/form/input"
 
-type Item interface {
+type item interface {
 	// write writes the item where the cursor currently is
 	write()
 

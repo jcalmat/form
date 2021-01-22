@@ -9,7 +9,7 @@ type FormItems []*FormItem
 
 // FormItem wraps item and its dependencies
 type FormItem struct {
-	item     Item
+	item     item
 	parent   *FormItem
 	children FormItems
 }
@@ -58,18 +58,14 @@ func (f *FormItem) AddItem(formItem *FormItem) *FormItem {
 	return formItem
 }
 
-func (f *FormItem) Item() Item {
-	return f.item
-}
-
-func NewFormItem(i Item) *FormItem {
+func NewFormItem(i item) *FormItem {
 	return &FormItem{
 		item: i,
 	}
 }
 
-func (f FormItems) visibleItems() []Item {
-	items := make([]Item, 0)
+func (f FormItems) visibleItems() []item {
+	items := make([]item, 0)
 	for _, v := range f {
 		items = append(items, v.item)
 		if v.children != nil && v.item.displayChildren() {

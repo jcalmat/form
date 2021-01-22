@@ -12,7 +12,7 @@ const (
 	checkbox_check   string = "☑"
 )
 
-// checkbox implements Item interface
+// checkbox implements item interface
 type checkbox struct {
 	question string
 	prefix   string
@@ -20,7 +20,7 @@ type checkbox struct {
 	selected bool
 }
 
-var _ Item = (*checkbox)(nil)
+var _ item = (*checkbox)(nil)
 
 // NewCheckbox creates a new instance of checkbox object
 func NewCheckbox(question string, checked bool) *FormItem {

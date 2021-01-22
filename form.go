@@ -32,7 +32,7 @@ func (f *Form) AddItems(items ...*FormItem) *Form {
 	return f
 }
 
-func (f *Form) visibleItems() []Item {
+func (f *Form) visibleItems() []item {
 	return f.items.visibleItems()
 }
 

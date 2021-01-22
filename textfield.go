@@ -8,7 +8,7 @@ import (
 	"github.com/jcalmat/form/input"
 )
 
-// textField implements Item interface
+// textField implements item interface
 type textField struct {
 	question          string
 	prefix            string
@@ -17,7 +17,7 @@ type textField struct {
 	minCursorPosition int
 }
 
-var _ Item = (*textField)(nil)
+var _ item = (*textField)(nil)
 
 // NewTextField creates a new instance of textField object
 func NewTextField(question string) *FormItem {

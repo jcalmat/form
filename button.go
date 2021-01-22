@@ -7,7 +7,7 @@ import (
 	"github.com/jcalmat/form/input"
 )
 
-// button implements Item interface
+// button implements item interface
 type button struct {
 	s        string
 	callback func()
@@ -15,7 +15,7 @@ type button struct {
 	selected bool
 }
 
-var _ Item = (*button)(nil)
+var _ item = (*button)(nil)
 
 // NewButton creates a new instance of button object
 func NewButton(s string, callback func()) *FormItem {
