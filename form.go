@@ -24,16 +24,13 @@ func (f *Form) AddItem(formItem *FormItem) *FormItem {
 	return formItem
 }
 
-// // AddItems adds many FormItems to the Form object
-// func (f *Form) AddItems(items ...Item) *Form {
-// 	for _, i := range items {
-// 		item := &FormItem{
-// 			item: i,
-// 		}
-// 		f.items = append(f.items, item)
-// 	}
-// 	return f
-// }
+// AddItems adds many FormItems to the Form object
+func (f *Form) AddItems(items ...*FormItem) *Form {
+	for _, i := range items {
+		f.items = append(f.items, i)
+	}
+	return f
+}
 
 func (f *Form) visibleItems() []Item {
 	return f.items.visibleItems()

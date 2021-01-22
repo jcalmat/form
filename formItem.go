@@ -14,14 +14,12 @@ type FormItem struct {
 	children FormItems
 }
 
-// func (f *FormItem) AddItems(c ...Item) *FormItem {
-// 	for _, item := range c {
-// 		formItem := &FormItem{item: item, parent: f}
-// 		formItem.setText()
-// 		f.children = append(f.children, formItem)
-// 	}
-// 	return f
-// }
+func (f *FormItem) AddItems(c ...*FormItem) *FormItem {
+	for _, item := range c {
+		f.AddItem(item)
+	}
+	return f
+}
 
 func (f *FormItem) setTextRecursive() {
 	for _, i := range f.children {
