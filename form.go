@@ -81,9 +81,7 @@ func (f *Form) stop() {
 }
 
 func (f *Form) displayItems() {
-	cursor.RestorePosition()
-
-	cursor.ClearBelow()
+	cursor.ClearScreen()
 
 	// Display all visible items.
 	for _, p := range f.visibleItems() {
@@ -95,7 +93,12 @@ func (f *Form) displayItems() {
 // Run displays the formItems and handles the user's inputs
 func (f *Form) Run() {
 	cursor.StartBufferedSession()
+	cursor.ClearScreen()
 	defer cursor.RestoreSession()
+
+	cursor.DisableInputBuffering()
+	cursor.HideInputs()
+	defer cursor.RestoreEchoingState()
 
 	f.active = true
 	visibleItems := f.visibleItems()
@@ -103,9 +106,6 @@ func (f *Form) Run() {
 	for _, item := range f.items {
 		item.setTextRecursive()
 	}
-
-	// Save cursor position at first line.
-	cursor.SavePosition()
 
 	// Do not process if there is no selectable formItem
 	var firstSelectable *int
@@ -121,11 +121,6 @@ func (f *Form) Run() {
 
 	f.AddItem(NewButton(done_button, func() { f.stop() }))
 	f.AddItem(NewLabel(navigation_keys_message))
-	f.displayItems()
-
-	cursor.DisableInputBuffering()
-	cursor.HideInputs()
-	defer cursor.RestoreEchoingState()
 
 	cursor.MovePrevLine(len(f.visibleItems()) - *firstSelectable)
 	selected := f.pick(*firstSelectable, 0)
