@@ -88,7 +88,7 @@ func (f *Form) displayItems() {
 }
 
 // Run displays the formItems and handles the user's inputs
-func (f *Form) Run() {
+func (f *Form) Run() error {
 	cursor.StartBufferedSession()
 	cursor.ClearScreen()
 	defer cursor.RestoreSession()
@@ -113,7 +113,7 @@ func (f *Form) Run() {
 		}
 	}
 	if firstSelectable == nil {
-		return
+		return ErrNoSelectableItem
 	}
 
 	f.AddItem(NewButton(done_button, func() { f.stop() }))
@@ -143,7 +143,7 @@ func (f *Form) Run() {
 		}
 		if i.Is(input.ESC) {
 			f.stop()
-			continue
+			return ErrUserCancelRequest
 		}
 
 		// Handle any other input and let the formItem process it.
@@ -154,4 +154,5 @@ func (f *Form) Run() {
 			selected = f.pick(selected, 1)
 		}
 	}
+	return nil
 }
