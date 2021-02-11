@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"os/exec"
+
+	"golang.org/x/sys/unix"
 )
 
 func write(s string) {
@@ -23,7 +24,11 @@ func MovePrevLine(amount int) {
 	}
 }
 
+var termios *unix.Termios
+
 func StartBufferedSession() {
+	// state, _ = terminal.GetState(0)
+	// terminal.NewTerminal(state.)
 	fmt.Print("\033[?1049h\033[H")
 }
 
@@ -31,13 +36,13 @@ func RestoreSession() {
 	fmt.Print("\033[?1049l")
 }
 
-func SavePosition() {
-	write("\u001b7")
-}
+// func SavePosition() {
+// 	write("\u001b7")
+// }
 
-func RestorePosition() {
-	write("\u001b8")
-}
+// func RestorePosition() {
+// 	write("\u001b8")
+// }
 
 func ClearScreen() {
 	fmt.Print("\u001b[0J")
@@ -49,15 +54,30 @@ func ClearBelow() {
 }
 
 func DisableInputBuffering() {
-	_ = exec.Command("stty", "-F", "/dev/tty", "cbreak", "min", "1").Run()
+	// _ = exec.Command("stty", "-F", "/dev/tty", "cbreak", "min", "1").Run()
 }
 
 func HideInputs() {
-	_ = exec.Command("stty", "-F", "/dev/tty", "-echo").Run()
+	// _ = exec.Command("stty", "-F", "/dev/tty", "-echo").Run()
+	termios, err := unix.IoctlGetTermios(1, unix.TCGETS)
+	if err != nil {
+		return
+	}
+
+	newState := *termios
+	newState.Lflag &^= unix.ECHO | unix.ICANON
+	newState.Lflag |= unix.ISIG
+	newState.Iflag |= unix.ICRNL
+	if err := unix.IoctlSetTermios(1, unix.TCSETS, &newState); err != nil {
+		return
+	}
 }
 
 func RestoreEchoingState() {
-	_ = exec.Command("stty", "-F", "/dev/tty", "echo").Run()
+
+	_ = unix.IoctlSetTermios(1, unix.TCSETS, termios)
+
+	// _ = exec.Command("stty", "-F", "/dev/tty", "echo").Run()
 }
 
 func HideCursor() {

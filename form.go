@@ -96,6 +96,8 @@ func (f *Form) Run() error {
 	cursor.HideInputs()
 	defer cursor.RestoreEchoingState()
 
+	cursor.ClearScreen()
+
 	f.active = true
 	visibleItems := f.visibleItems()
 
