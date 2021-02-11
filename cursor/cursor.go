@@ -32,15 +32,15 @@ func RestoreSession() {
 }
 
 func SavePosition() {
-	write("\x1b7")
+	write("\u001b7")
 }
 
 func RestorePosition() {
-	write("\x1b8")
+	write("\u001b8")
 }
 
 func ClearScreen() {
-	fmt.Print("\x1b[2J")
+	fmt.Print("\u001b[0J")
 }
 
 // ClearBelow clear all from cursor until the end of the screen

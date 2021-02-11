@@ -90,7 +90,6 @@ func (f *Form) displayItems() {
 // Run displays the formItems and handles the user's inputs
 func (f *Form) Run() error {
 	cursor.StartBufferedSession()
-	cursor.ClearScreen()
 	defer cursor.RestoreSession()
 
 	cursor.DisableInputBuffering()
