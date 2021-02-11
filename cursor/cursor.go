@@ -57,9 +57,14 @@ func DisableInputBuffering() {
 	// _ = exec.Command("stty", "-F", "/dev/tty", "cbreak", "min", "1").Run()
 }
 
+const (
+	TCGETS = 0x5401
+	TCSETS = 0x5402
+)
+
 func HideInputs() {
 	// _ = exec.Command("stty", "-F", "/dev/tty", "-echo").Run()
-	termios, err := unix.IoctlGetTermios(1, unix.TCGETS)
+	termios, err := unix.IoctlGetTermios(1, TCGETS)
 	if err != nil {
 		return
 	}
@@ -68,14 +73,14 @@ func HideInputs() {
 	newState.Lflag &^= unix.ECHO | unix.ICANON
 	newState.Lflag |= unix.ISIG
 	newState.Iflag |= unix.ICRNL
-	if err := unix.IoctlSetTermios(1, unix.TCSETS, &newState); err != nil {
+	if err := unix.IoctlSetTermios(1, TCSETS, &newState); err != nil {
 		return
 	}
 }
 
 func RestoreEchoingState() {
 
-	_ = unix.IoctlSetTermios(1, unix.TCSETS, termios)
+	_ = unix.IoctlSetTermios(1, TCSETS, termios)
 
 	// _ = exec.Command("stty", "-F", "/dev/tty", "echo").Run()
 }
